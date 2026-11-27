@@ -31,6 +31,10 @@
                 class="px-3 py-1.5 border border-red-500 text-red-600 rounded text-xs font-medium flex items-center gap-1 hover:bg-red-50">
                 <QrCode class="w-3 h-3" /> Contactless
             </button>
+            <button @click="openQrScanner"
+                class="px-3 py-1.5 border border-gray-300 text-gray-700 rounded text-xs font-medium flex items-center gap-1 hover:bg-gray-50">
+                <ScanLine class="w-3 h-3" /> Scan Table QR
+            </button>
             <div class="flex-1" />
             <div class="hidden sm:flex items-center gap-2.5 text-xs text-gray-500">
                 <span class="flex items-center gap-1"><span class="w-3.5 h-3.5 rounded border-2 border-dashed border-gray-400 bg-white inline-block"></span> Blank</span>
@@ -83,7 +87,7 @@
 
                             <template v-if="table.status === 'occupied'">
                                 <p class="font-bold mt-1 text-blue-900" style="font-size:10px">
-                                    ₹{{ table.current_order?.grand_total ?? '–' }}
+                                    AFS {{ table.current_order?.grand_total ?? '–' }}
                                 </p>
                                 <p class="opacity-60" style="font-size:9px">{{ elapsed(table.current_order?.created_at) }}</p>
                             </template>
@@ -192,6 +196,41 @@
         </div>
     </Teleport>
 
+    <!-- Table QR Scanner -->
+    <Teleport to="body">
+        <div v-if="showQrScanner" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-xl p-5 max-w-lg w-full shadow-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-base text-gray-800 flex items-center gap-2">
+                        <ScanLine class="w-5 h-5 text-red-600" /> Scan Table QR
+                    </h3>
+                    <button @click="closeQrScanner" class="text-gray-500 hover:text-gray-800" aria-label="Close scanner">
+                        <X class="w-5 h-5" />
+                    </button>
+                </div>
+                <video ref="qrVideo" autoplay muted playsinline
+                    class="w-full aspect-video rounded-lg bg-black object-cover"></video>
+                <p v-if="scannerError" class="text-sm text-red-600 mt-3">{{ scannerError }}</p>
+                <p v-else class="text-sm text-gray-500 mt-3">
+                    Point the camera at a table QR code to open that table.
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                    Camera access requires permission and a secure connection (HTTPS or localhost).
+                </p>
+                <div class="flex gap-2 mt-4">
+                    <button v-if="scannerError" @click="startQrScanner"
+                        class="flex-1 py-2 bg-red-600 text-white rounded text-sm font-semibold hover:bg-red-700">
+                        Try Again
+                    </button>
+                    <button @click="closeQrScanner"
+                        class="flex-1 py-2 border rounded text-sm text-gray-600 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </Teleport>
+
     <!-- Contactless QR Modal -->
     <Teleport to="body">
         <div v-if="showContactless" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -201,7 +240,7 @@
                 </div>
                 <h3 class="font-bold text-sm text-gray-800 mb-1">Contactless Ordering</h3>
                 <p class="text-xs text-gray-500 mb-4">
-                    Select a table to get a link for contactless digital menu ordering.
+                    Select a table to share a public digital menu link.
                 </p>
                 <div class="mb-4 text-left">
                     <label class="text-xs font-medium text-gray-700 mb-1 block">Select Table</label>
@@ -212,12 +251,17 @@
                     </select>
                 </div>
                 <div v-if="contactlessTable" class="bg-gray-100 rounded-lg p-3 mb-4">
+                    <img v-if="contactlessQr" :src="contactlessQr" alt="Contactless menu QR code"
+                        class="w-44 h-44 mx-auto mb-2" />
                     <p class="text-xs font-mono text-gray-600 break-all">{{ contactlessUrl }}</p>
                     <button @click="copyContactlessUrl"
                         class="mt-2 text-xs text-red-600 hover:text-red-700 font-medium flex items-center gap-1 mx-auto">
                         <Copy class="w-3 h-3" /> Copy Link
                     </button>
                 </div>
+                <p class="text-xs text-gray-400 mb-3">
+                    Guests need a network-accessible address; localhost links only work on this device.
+                </p>
                 <button @click="showContactless = false"
                     class="w-full py-2 border rounded text-xs text-gray-600 hover:bg-gray-50">
                     Close
@@ -228,10 +272,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { RefreshCw, CalendarDays, QrCode, Truck, ShoppingBag, Copy } from 'lucide-vue-next'
+import { RefreshCw, CalendarDays, QrCode, Truck, ShoppingBag, Copy, ScanLine, X } from 'lucide-vue-next'
 import { toast } from 'vue3-toastify'
+import QRCode from 'qrcode'
 import api from '@/api/index.js'
 
 const router = useRouter()
@@ -257,11 +302,33 @@ const reservationForm   = reactive({
 
 const showContactless  = ref(false)
 const contactlessTable = ref(null)
+const contactlessQr    = ref('')
+const showQrScanner    = ref(false)
+const scannerError     = ref('')
+const qrVideo          = ref(null)
+let qrReader           = null
+let scannerControls    = null
+let scannerGeneration  = 0
+let handlingScan       = false
 const contactlessUrl   = computed(() =>
     contactlessTable.value
-        ? `${window.location.origin}/menu?table=${contactlessTable.value.id}`
+        ? `${window.location.origin}/tables/${contactlessTable.value.id}/order`
         : ''
 )
+
+let qrGeneration = 0
+watch(contactlessUrl, async (url) => {
+    const generation = ++qrGeneration
+    contactlessQr.value = ''
+    if (!url) return
+
+    try {
+        const qr = await QRCode.toDataURL(url, { width: 220, margin: 1 })
+        if (generation === qrGeneration) contactlessQr.value = qr
+    } catch {
+        if (generation === qrGeneration) toast.error('Could not generate the menu QR code')
+    }
+})
 
 // ── Computed ──────────────────────────────────────────────────────
 const availableTables = computed(() => tables.value.filter(t => t.status === 'available'))
@@ -336,6 +403,91 @@ function copyContactlessUrl() {
         .catch(() => toast.error('Could not copy link'))
 }
 
+async function openQrScanner() {
+    showQrScanner.value = true
+    await startQrScanner()
+}
+
+async function startQrScanner() {
+    stopQrScanner()
+    const generation = scannerGeneration
+    scannerError.value = ''
+    handlingScan = false
+
+    await nextTick()
+    if (!showQrScanner.value || !qrVideo.value) return
+
+    try {
+        if (!qrReader) {
+            const { BrowserQRCodeReader } = await import('@zxing/browser')
+            if (generation !== scannerGeneration || !showQrScanner.value) return
+            qrReader = new BrowserQRCodeReader()
+        }
+
+        const controls = await qrReader.decodeFromConstraints(
+            { video: { facingMode: { ideal: 'environment' } } },
+            qrVideo.value,
+            (result) => {
+                if (result && !handlingScan) handleTableQr(result.getText())
+            }
+        )
+
+        if (generation !== scannerGeneration || !showQrScanner.value) {
+            controls.stop()
+        } else {
+            scannerControls = controls
+        }
+    } catch (error) {
+        scannerError.value = error.name === 'NotAllowedError'
+            ? 'Camera permission was denied. Allow camera access and try again.'
+            : error.name === 'NotFoundError'
+                ? 'No camera was found on this device.'
+                : 'Could not start the camera. Use HTTPS or localhost and check browser permissions.'
+    }
+}
+
+function handleTableQr(text) {
+    handlingScan = true
+    stopQrScanner()
+
+    let scannedUrl
+    try {
+        scannedUrl = new URL(text, window.location.origin)
+    } catch {
+        scannerError.value = 'This QR code does not contain a valid table link.'
+        handlingScan = false
+        return
+    }
+
+    if (scannedUrl.origin !== window.location.origin) {
+        scannerError.value = 'This QR code belongs to a different website.'
+        handlingScan = false
+        return
+    }
+
+    const match = scannedUrl.pathname.match(/^\/tables\/(\d+)\/order\/?$/)
+    const table = match && tables.value.find(item => String(item.id) === match[1])
+    if (!table || table.status === 'blocked') {
+        scannerError.value = 'This QR code does not match an active table.'
+        handlingScan = false
+        return
+    }
+
+    closeQrScanner()
+    router.push({ name: 'table-order', params: { tableId: table.id } })
+}
+
+function stopQrScanner() {
+    scannerGeneration++
+    scannerControls?.stop()
+    scannerControls = null
+}
+
+function closeQrScanner() {
+    showQrScanner.value = false
+    stopQrScanner()
+}
+
 // ── Helpers ───────────────────────────────────────────────────────
 function tableCardClass(table) {
     if (table.status === 'occupied')  return 'bg-blue-100 border-blue-400 text-blue-900'
@@ -359,5 +511,8 @@ onMounted(() => {
     loadFloor()
     timer = setInterval(loadFloor, 30000)
 })
-onUnmounted(() => clearInterval(timer))
+onUnmounted(() => {
+    clearInterval(timer)
+    stopQrScanner()
+})
 </script>

@@ -9,6 +9,7 @@ use App\Http\Controllers\API\KDSController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ProductController;
+use App\Http\Controllers\API\PublicContactlessMenuController;
 use App\Http\Controllers\API\ReportController;
 use App\Http\Controllers\API\ReservationController;
 use App\Http\Controllers\API\SettingsController;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 // Public auth routes
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/pin-login', [AuthController::class, 'pinLogin']);
+Route::get('/public/contactless/tables/{table}/menu', [PublicContactlessMenuController::class, 'show']);
 
 // Sanctum CSRF cookie (needed for SPA)
 Route::get('/sanctum/csrf-cookie', function () {
@@ -34,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/auth/profile', [AuthController::class, 'updateProfile']);
 
     // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('permission:dashboard.view');
 
     // Categories
     Route::get('/categories', [CategoryController::class, 'index']);
@@ -51,8 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/products/{product}/toggle', [ProductController::class, 'toggleAvailability']);
 
     // Tables
-    Route::get('/tables', [TableController::class, 'index']);
-    Route::get('/tables/{table}', [TableController::class, 'show']);
+    Route::get('/tables', [TableController::class, 'index'])->middleware('permission:tables.view');
+    Route::get('/tables/{table}', [TableController::class, 'show'])->middleware('permission:tables.view');
     Route::post('/tables', [TableController::class, 'store'])->middleware('permission:tables.manage');
     Route::put('/tables/{table}', [TableController::class, 'update'])->middleware('permission:tables.manage');
     Route::patch('/tables/{table}/status', [TableController::class, 'updateStatus']);
@@ -66,11 +68,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy']);
 
     // Orders
-    Route::get('/orders', [OrderController::class, 'index']);
-    Route::get('/orders/{order}', [OrderController::class, 'show']);
+    Route::get('/orders', [OrderController::class, 'index'])->middleware('permission:orders.view');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->middleware('permission:orders.view');
     Route::post('/orders', [OrderController::class, 'store'])->middleware('permission:orders.create');
     Route::post('/orders/{order}/items', [OrderController::class, 'addItems'])->middleware('permission:orders.edit');
-    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+    Route::patch('/orders/{order}/status', [OrderController::class, 'updateStatus'])->middleware('permission:orders.edit');
     Route::post('/orders/{order}/discount', [OrderController::class, 'applyDiscount'])->middleware('permission:orders.discount');
     Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->middleware('permission:orders.delete');
 
@@ -86,15 +88,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/customers/{customer}', [CustomerController::class, 'update']);
 
     // KDS (Kitchen Display System)
-    Route::get('/kds', [KDSController::class, 'index']);
-    Route::patch('/kds/items/{item}/status', [KDSController::class, 'updateItemStatus']);
-    Route::patch('/kds/orders/{order}/status', [KDSController::class, 'updateOrderStatus']);
+    Route::get('/kds', [KDSController::class, 'index'])->middleware('permission:kitchen.view');
+    Route::patch('/kds/items/{item}/status', [KDSController::class, 'updateItemStatus'])->middleware('permission:kitchen.update_status');
+    Route::patch('/kds/orders/{order}/status', [KDSController::class, 'updateOrderStatus'])->middleware('permission:kitchen.update_status');
 
     // Staff
-    Route::get('/staff', [StaffController::class, 'index']);
+    Route::get('/staff', [StaffController::class, 'index'])->middleware('permission:staff.manage');
     Route::post('/staff', [StaffController::class, 'store'])->middleware('permission:staff.manage');
     Route::put('/staff/{user}', [StaffController::class, 'update'])->middleware('permission:staff.manage');
-    Route::get('/roles', [StaffController::class, 'roles']);
+    Route::delete('/staff/{user}', [StaffController::class, 'destroy'])->middleware('permission:staff.manage');
+    Route::get('/roles', [StaffController::class, 'roles'])->middleware('permission:staff.manage');
     Route::get('/permissions', [StaffController::class, 'permissions']);
     Route::put('/roles/{role}/permissions', [StaffController::class, 'updateRolePermissions'])->middleware('permission:settings.manage');
 

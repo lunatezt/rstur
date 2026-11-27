@@ -35,7 +35,10 @@
                                     <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                                         <span class="text-orange-500 text-sm">{{ cat.name.charAt(0) }}</span>
                                     </div>
-                                    <span class="font-medium text-gray-900">{{ cat.name }}</span>
+                                    <div>
+                                        <p class="font-medium text-gray-900">{{ cat.name_en ?? cat.name }}</p>
+                                        <p v-if="cat.name_fa" dir="rtl" class="text-xs text-gray-500">{{ cat.name_fa }}</p>
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-gray-600">{{ cat.products_count }}</td>
@@ -65,7 +68,7 @@
             <div class="flex items-center gap-3 mb-4">
                 <select v-model="productFilters.category_id" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <option value="">All Categories</option>
-                    <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                    <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name_en ?? c.name }}{{ c.name_fa ? ` / ${c.name_fa}` : '' }}</option>
                 </select>
                 <input v-model="productFilters.search" placeholder="Search products..." class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1" />
                 <button @click="openProductForm()" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2 flex-shrink-0">
@@ -89,16 +92,19 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                        <img v-if="product.image" :src="product.image" class="w-full h-full object-cover" />
-                                        <UtensilsCrossed v-else class="w-5 h-5 text-gray-400 m-2.5" />
+                                        <img :src="product.image_url || '/images/default-food.svg'" :alt="product.name_en ?? product.name" class="w-full h-full object-cover" />
                                     </div>
                                     <div>
-                                        <p class="font-medium text-gray-900">{{ product.name }}</p>
+                                        <p class="font-medium text-gray-900">{{ product.name_en ?? product.name }}</p>
+                                        <p v-if="product.name_fa" dir="rtl" class="text-xs text-gray-500">{{ product.name_fa }}</p>
                                         <p class="text-xs text-gray-400">{{ product.sku }}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">{{ product.category?.name }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                <span>{{ product.category?.name_en ?? product.category?.name }}</span>
+                                <span v-if="product.category?.name_fa" dir="rtl" class="block text-xs text-gray-500">{{ product.category.name_fa }}</span>
+                            </td>
                             <td class="px-6 py-4 text-right font-semibold text-gray-900">AFS {{ product.price }}</td>
                             <td class="px-6 py-4">
                                 <div :class="['w-4 h-4 rounded-full border-2', product.is_veg ? 'border-green-500 bg-green-100' : 'border-red-500 bg-red-100']"></div>
@@ -127,8 +133,12 @@
                 <h3 class="font-bold text-lg mb-4">{{ editingCategory?.id ? 'Edit' : 'Add' }} Category</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">Name *</label>
-                        <input v-model="categoryForm.name" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">English Name *</label>
+                        <input v-model.trim="categoryForm.name_en" required maxlength="255" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Persian Name *</label>
+                        <input v-model.trim="categoryForm.name_fa" required maxlength="255" dir="rtl" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
                     </div>
                     <div class="flex gap-4">
                         <label class="flex items-center gap-2 text-sm">
@@ -161,18 +171,22 @@
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="col-span-2">
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">Name *</label>
-                            <input v-model="productForm.name" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">English Name *</label>
+                            <input v-model.trim="productForm.name_en" required maxlength="255" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">Persian Name *</label>
+                            <input v-model.trim="productForm.name_fa" required maxlength="255" dir="rtl" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-700 mb-1 block">Category *</label>
-                            <select v-model="productForm.category_id" class="w-full border border-gray-300 rounded-lg px-3 py-2.5">
-                                <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                            <select v-model="productForm.category_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5">
+                                <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name_en ?? c.name }}{{ c.name_fa ? ` / ${c.name_fa}` : '' }}</option>
                             </select>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-700 mb-1 block">Price *</label>
-                            <input v-model="productForm.price" type="number" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
+                            <input v-model="productForm.price" type="number" min="0" step="0.01" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-700 mb-1 block">Cost Price</label>
@@ -197,9 +211,22 @@
                         <label class="text-sm font-medium text-gray-700 mb-1 block">Description</label>
                         <textarea v-model="productForm.short_description" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
                     </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">Food Photo</label>
+                        <div class="flex items-center gap-3">
+                            <img :src="productImagePreview" alt="Product preview" class="w-20 h-20 rounded-lg object-cover bg-gray-100" />
+                            <div>
+                                <input type="file" accept="image/*" @change="handleProductImageChange"
+                                    class="block w-full text-xs text-gray-600 file:mr-2 file:px-3 file:py-1.5 file:rounded file:border-0 file:bg-orange-100 file:text-orange-700" />
+                                <button v-if="editingProduct?.image" type="button" @click="clearProductImage"
+                                    class="mt-2 text-xs text-red-600 hover:underline">Remove photo</button>
+                                <p class="mt-1 text-xs text-gray-400">JPG, PNG, or WebP; up to 5 MB.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="showProductModal = false" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
+                    <button @click="closeProductForm" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
                     <button @click="saveProduct" class="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">Save</button>
                 </div>
             </div>
@@ -210,7 +237,7 @@
 <script setup>
 import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { toast } from 'vue3-toastify'
-import { Plus, UtensilsCrossed } from 'lucide-vue-next'
+import { Plus } from 'lucide-vue-next'
 import api from '@/api/index.js'
 
 const tab = ref('categories')
@@ -225,12 +252,15 @@ const showProductModal = ref(false)
 const editingCategory = ref(null)
 const editingProduct = ref(null)
 
-const categoryForm = reactive({ name: '', is_active: true, display_in_pos: true, display_in_kds: true })
+const categoryForm = reactive({ name_en: '', name_fa: '', is_active: true, display_in_pos: true, display_in_kds: true })
 const productForm = reactive({
-    name: '', category_id: '', price: '', cost_price: '', sku: '',
+    name_en: '', name_fa: '', category_id: '', price: '', cost_price: '', sku: '',
     is_veg: true, is_available: true, is_featured: false, is_active: true,
     short_description: '', preparation_time_minutes: 15,
 })
+const productImageFile = ref(null)
+const productImagePreview = ref('/images/default-food.svg')
+const removeProductImage = ref(false)
 
 async function loadCategories() {
     const { data } = await api.get('/categories')
@@ -247,22 +277,26 @@ async function loadProducts() {
 
 function openCategoryForm(cat = null) {
     editingCategory.value = cat
-    if (cat) Object.assign(categoryForm, { name: cat.name, is_active: cat.is_active, display_in_pos: cat.display_in_pos, display_in_kds: cat.display_in_kds })
-    else Object.assign(categoryForm, { name: '', is_active: true, display_in_pos: true, display_in_kds: true })
+    if (cat) Object.assign(categoryForm, { name_en: cat.name_en ?? cat.name, name_fa: cat.name_fa ?? '', is_active: cat.is_active, display_in_pos: cat.display_in_pos, display_in_kds: cat.display_in_kds })
+    else Object.assign(categoryForm, { name_en: '', name_fa: '', is_active: true, display_in_pos: true, display_in_kds: true })
     showCategoryModal.value = true
 }
 
 async function saveCategory() {
     const payload = { ...categoryForm }
-    if (editingCategory.value?.id) {
-        await api.put(`/categories/${editingCategory.value.id}`, payload)
-        toast.success('Category updated')
-    } else {
-        await api.post('/categories', payload)
-        toast.success('Category created')
+    try {
+        if (editingCategory.value?.id) {
+            await api.put(`/categories/${editingCategory.value.id}`, payload)
+            toast.success('Category updated')
+        } else {
+            await api.post('/categories', payload)
+            toast.success('Category created')
+        }
+        showCategoryModal.value = false
+        await loadCategories()
+    } catch (error) {
+        toast.error(error.response?.data?.message ?? 'Failed to save category')
     }
-    showCategoryModal.value = false
-    await loadCategories()
 }
 
 async function deleteCategory(cat) {
@@ -273,35 +307,79 @@ async function deleteCategory(cat) {
 }
 
 function openProductForm(prod = null) {
+    if (productImagePreview.value.startsWith('blob:')) URL.revokeObjectURL(productImagePreview.value)
     editingProduct.value = prod
     if (prod) {
         Object.assign(productForm, {
-            name: prod.name, category_id: prod.category_id, price: prod.price,
+            name_en: prod.name_en ?? prod.name, name_fa: prod.name_fa ?? '', category_id: prod.category_id, price: prod.price,
             cost_price: prod.cost_price, sku: prod.sku, is_veg: prod.is_veg,
             is_available: prod.is_available, is_featured: prod.is_featured,
             is_active: prod.is_active, short_description: prod.short_description,
             preparation_time_minutes: prod.preparation_time_minutes,
         })
+        productImagePreview.value = prod.image_url
     } else {
         Object.assign(productForm, {
-            name: '', category_id: '', price: '', cost_price: '', sku: '',
+            name_en: '', name_fa: '', category_id: categories.value[0]?.id ?? '', price: '', cost_price: '', sku: '',
             is_veg: true, is_available: true, is_featured: false, is_active: true,
             short_description: '', preparation_time_minutes: 15,
         })
+        productImagePreview.value = '/images/default-food.svg'
     }
+    productImageFile.value = null
+    removeProductImage.value = false
     showProductModal.value = true
 }
 
-async function saveProduct() {
-    if (editingProduct.value?.id) {
-        await api.put(`/products/${editingProduct.value.id}`, productForm)
-        toast.success('Product updated')
-    } else {
-        await api.post('/products', productForm)
-        toast.success('Product created')
-    }
+function handleProductImageChange(event) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (productImagePreview.value.startsWith('blob:')) URL.revokeObjectURL(productImagePreview.value)
+    productImageFile.value = file
+    productImagePreview.value = URL.createObjectURL(file)
+    removeProductImage.value = false
+}
+
+function clearProductImage() {
+    if (productImagePreview.value.startsWith('blob:')) URL.revokeObjectURL(productImagePreview.value)
+    productImageFile.value = null
+    productImagePreview.value = '/images/default-food.svg'
+    removeProductImage.value = true
+}
+
+function closeProductForm() {
+    if (productImagePreview.value.startsWith('blob:')) URL.revokeObjectURL(productImagePreview.value)
     showProductModal.value = false
-    await loadProducts()
+}
+
+function productPayload() {
+    const payload = new FormData()
+    Object.entries(productForm).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            payload.append(key, typeof value === 'boolean' ? (value ? '1' : '0') : value)
+        }
+    })
+    if (productImageFile.value) payload.append('image', productImageFile.value)
+    else if (removeProductImage.value) payload.append('image', '')
+    if (editingProduct.value?.id) payload.append('_method', 'PUT')
+    return payload
+}
+
+async function saveProduct() {
+    const payload = productPayload()
+    try {
+        if (editingProduct.value?.id) {
+            await api.post(`/products/${editingProduct.value.id}`, payload, { headers: { 'Content-Type': 'multipart/form-data' } })
+            toast.success('Product updated')
+        } else {
+            await api.post('/products', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
+            toast.success('Product created')
+        }
+        closeProductForm()
+        await loadProducts()
+    } catch (error) {
+        toast.error(error.response?.data?.message ?? 'Failed to save product')
+    }
 }
 
 async function deleteProduct(product) {

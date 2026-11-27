@@ -51,7 +51,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right text-sm text-gray-600">{{ c.total_visits }}</td>
-                        <td class="px-6 py-4 text-right font-semibold text-gray-900">₹{{ c.total_spent }}</td>
+                        <td class="px-6 py-4 text-right font-semibold text-gray-900">AFS {{ c.total_spent }}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             {{ c.last_visit_at ? formatDate(c.last_visit_at) : 'Never' }}
                         </td>

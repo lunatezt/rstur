@@ -42,7 +42,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right text-sm text-gray-500">{{ item.minimum_stock }}</td>
-                        <td class="px-6 py-4 text-right text-sm text-gray-700">₹{{ item.cost_per_unit }}</td>
+                        <td class="px-6 py-4 text-right text-sm text-gray-700">AFS {{ item.cost_per_unit }}</td>
                         <td class="px-6 py-4">
                             <span v-if="item.current_stock <= item.reorder_point"
                                 class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 w-fit">

@@ -52,10 +52,8 @@
                         @click="addToCart(product)"
                         class="bg-white rounded-xl p-3 cursor-pointer hover:shadow-md hover:scale-105 transition-all border border-gray-100 select-none">
                         <div class="aspect-square bg-gray-100 rounded-lg mb-2 overflow-hidden relative">
-                            <img v-if="product.image" :src="product.image" class="w-full h-full object-cover" />
-                            <div v-else class="w-full h-full flex items-center justify-center">
-                                <UtensilsCrossed class="w-8 h-8 text-gray-300" />
-                            </div>
+                            <img :src="product.image_url || '/images/default-food.svg'"
+                                :alt="product.name_en ?? product.name" class="w-full h-full object-cover" />
                             <div class="absolute top-1.5 left-1.5">
                                 <div :class="['w-3 h-3 rounded-full border border-white', product.is_veg ? 'bg-green-500' : 'bg-red-500']"></div>
                             </div>
@@ -63,9 +61,10 @@
                                 <span class="text-white text-xs font-bold">UNAVAILABLE</span>
                             </div>
                         </div>
-                        <h3 class="text-xs font-semibold text-gray-800 leading-tight truncate">{{ product.name }}</h3>
+                        <h3 class="text-xs font-semibold text-gray-800 leading-tight truncate">{{ product.name_en ?? product.name }}</h3>
+                        <p v-if="product.name_fa" dir="rtl" class="text-xs text-gray-500 truncate">{{ product.name_fa }}</p>
                         <div class="flex items-center justify-between mt-1">
-                            <span class="text-sm font-bold text-orange-600">₹{{ product.current_price }}</span>
+                            <span class="text-sm font-bold text-orange-600">AFS {{ product.current_price }}</span>
                             <span class="text-xs text-gray-400">{{ product.unit_type }}</span>
                         </div>
                     </div>
@@ -141,8 +140,8 @@
                                 </div>
                             </div>
                             <div class="text-right flex-shrink-0">
-                                <p class="text-sm font-bold text-gray-900">₹{{ (item.unit_price * item.quantity).toFixed(0) }}</p>
-                                <p class="text-xs text-gray-400">₹{{ item.unit_price }}/{{ item.unit_type }}</p>
+                                <p class="text-sm font-bold text-gray-900">AFS {{ (item.unit_price * item.quantity).toFixed(0) }}</p>
+                                <p class="text-xs text-gray-400">AFS {{ item.unit_price }}/{{ item.unit_type }}</p>
                             </div>
                         </div>
                     </div>
@@ -152,16 +151,16 @@
             <!-- Totals -->
             <div class="border-t p-4 space-y-2 bg-gray-50">
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span><span>₹{{ cart.subtotal.toFixed(2) }}</span>
+                    <span>Subtotal</span><span>AFS {{ cart.subtotal.toFixed(2) }}</span>
                 </div>
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Tax</span><span>₹{{ cart.taxTotal.toFixed(2) }}</span>
+                    <span>Tax</span><span>AFS {{ cart.taxTotal.toFixed(2) }}</span>
                 </div>
                 <div v-if="cart.discountAmount > 0" class="flex justify-between text-sm text-green-600">
-                    <span>Discount</span><span>-₹{{ cart.discountAmount.toFixed(2) }}</span>
+                    <span>Discount</span><span>-AFS {{ cart.discountAmount.toFixed(2) }}</span>
                 </div>
                 <div class="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Total</span><span class="text-orange-600">₹{{ cart.grandTotal }}</span>
+                    <span>Total</span><span class="text-orange-600">AFS {{ cart.grandTotal }}</span>
                 </div>
 
                 <!-- Action buttons -->
@@ -177,9 +176,9 @@
                     </button>
                 </div>
                 <button @click="showPaymentModal = true"
-                    v-if="currentOrder"
+                    v-if="currentOrder && isAdmin"
                     class="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors">
-                    <CreditCard class="w-5 h-5 inline mr-2" />Pay ₹{{ currentOrder.grand_total }}
+                    <CreditCard class="w-5 h-5 inline mr-2" />Pay AFS {{ currentOrder.grand_total }}
                 </button>
             </div>
         </div>
@@ -198,7 +197,7 @@
                         </button>
                         <button @click="discountForm.type = 'fixed'"
                             :class="['flex-1 py-2 rounded-lg text-sm font-medium', discountForm.type === 'fixed' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600']">
-                            Fixed ₹
+                            Fixed AFS
                         </button>
                     </div>
                     <input v-model="discountForm.value" type="number" min="0" placeholder="Enter amount"
@@ -216,7 +215,7 @@
 
     <!-- Payment Modal -->
     <Teleport to="body">
-        <div v-if="showPaymentModal && currentOrder" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div v-if="showPaymentModal && currentOrder && isAdmin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl w-full max-w-md p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="font-bold text-xl">Payment</h3>
@@ -224,7 +223,7 @@
                 </div>
                 <div class="text-center mb-6">
                     <p class="text-sm text-gray-500">Amount to Pay</p>
-                    <p class="text-4xl font-bold text-orange-600">₹{{ currentOrder.grand_total }}</p>
+                    <p class="text-4xl font-bold text-orange-600">AFS {{ currentOrder.grand_total }}</p>
                 </div>
                 <div class="grid grid-cols-3 gap-2 mb-4">
                     <button v-for="method in paymentMethods" :key="method.value"
@@ -238,7 +237,7 @@
                     <input v-model="cashTendered" type="number" :placeholder="currentOrder.grand_total"
                         class="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg font-bold focus:ring-2 focus:ring-orange-500 outline-none" />
                     <div v-if="cashTendered >= currentOrder.grand_total" class="mt-2 text-green-600 font-bold">
-                        Change: ₹{{ (cashTendered - currentOrder.grand_total).toFixed(0) }}
+                        Change: AFS {{ (cashTendered - currentOrder.grand_total).toFixed(0) }}
                     </div>
                 </div>
                 <div v-else-if="selectedPaymentMethod === 'upi'" class="mb-4">
@@ -247,7 +246,7 @@
                 </div>
                 <button @click="processPayment" :disabled="processingPayment"
                     class="w-full py-4 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 disabled:opacity-60 transition-colors">
-                    {{ processingPayment ? 'Processing...' : `Collect ₹${currentOrder.grand_total}` }}
+                    {{ processingPayment ? 'Processing...' : `Collect AFS ${currentOrder.grand_total}` }}
                 </button>
             </div>
         </div>
@@ -258,6 +257,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { toast } from 'vue3-toastify'
 import { useCartStore } from '@/stores/cart.js'
+import { useAuthStore } from '@/stores/auth.js'
 import api from '@/api/index.js'
 import {
     ShoppingCart, UtensilsCrossed, Search, Trash2, Plus, Minus,
@@ -265,6 +265,8 @@ import {
 } from 'lucide-vue-next'
 
 const cart = useCartStore()
+const auth = useAuthStore()
+const isAdmin = computed(() => auth.user?.role?.slug === 'admin')
 const categories = ref([])
 const products = ref([])
 const availableTables = ref([])
@@ -369,6 +371,10 @@ async function placeOrder() {
 }
 
 async function processPayment() {
+    if (!isAdmin.value) {
+        toast.error('Only admins can process payments.')
+        return
+    }
     if (!currentOrder.value) return
     processingPayment.value = true
     try {

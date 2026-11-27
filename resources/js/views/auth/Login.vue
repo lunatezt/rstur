@@ -10,47 +10,7 @@
                 <p class="text-gray-500 text-sm mt-1">Restaurant Point of Sale System</p>
             </div>
 
-            <!-- Tabs -->
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-6">
-                <button
-                    @click="loginMode = 'email'"
-                    :class="['flex-1 py-2 rounded-md text-sm font-medium transition-colors', loginMode === 'email' ? 'bg-white shadow text-orange-600' : 'text-gray-500']"
-                >Email Login</button>
-                <button
-                    @click="loginMode = 'pin'"
-                    :class="['flex-1 py-2 rounded-md text-sm font-medium transition-colors', loginMode === 'pin' ? 'bg-white shadow text-orange-600' : 'text-gray-500']"
-                >PIN Login</button>
-            </div>
-
-            <!-- Email Login -->
-            <form v-if="loginMode === 'email'" @submit.prevent="handleEmailLogin" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input v-model="emailForm.email" type="email" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                        placeholder="staff@restaurant.com" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input v-model="emailForm.password" type="password" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                        placeholder="••••••••" />
-                </div>
-                <div v-if="error" class="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg">{{ error }}</div>
-                <button type="submit" :disabled="auth.loading"
-                    class="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-60">
-                    {{ auth.loading ? 'Signing in...' : 'Sign In' }}
-                </button>
-            </form>
-
-            <!-- PIN Login -->
-            <form v-else @submit.prevent="handlePinLogin" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Restaurant ID</label>
-                    <input v-model="pinForm.restaurantId" type="number" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                        placeholder="1" />
-                </div>
+            <form @submit.prevent="handlePinLogin" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">PIN</label>
                     <div class="flex gap-2 justify-center">
@@ -73,7 +33,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { UtensilsCrossed } from 'lucide-vue-next'
@@ -82,29 +42,16 @@ onMounted(() => { document.title = 'Restaurant POS' })
 
 const auth = useAuthStore()
 const router = useRouter()
-const loginMode = ref('email')
 const error = ref('')
 
-const emailForm = reactive({ email: '', password: '' })
-const pinForm = reactive({ restaurantId: '' })
 const pinDigits = ref(['', '', '', ''])
 const pinRefs = ref([])
-
-async function handleEmailLogin() {
-    error.value = ''
-    const result = await auth.login(emailForm.email, emailForm.password)
-    if (result.success) {
-        router.push('/')
-    } else {
-        error.value = result.message
-    }
-}
 
 async function handlePinLogin() {
     error.value = ''
     const pin = pinDigits.value.join('')
     if (pin.length < 4) { error.value = 'Please enter full PIN'; return }
-    const result = await auth.pinLogin(pinForm.restaurantId, pin)
+    const result = await auth.pinLogin(1, pin)
     if (result.success) {
         router.push('/')
     } else {

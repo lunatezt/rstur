@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
     protected $fillable = [
-        'restaurant_id', 'category_id', 'tax_category_id', 'name', 'slug',
+        'restaurant_id', 'category_id', 'tax_category_id', 'name', 'name_en', 'name_fa', 'slug',
         'short_description', 'description', 'image', 'additional_images',
         'price', 'cost_price', 'mrp', 'sku', 'barcode', 'hsn_code', 'unit_type',
         'is_veg', 'is_available', 'is_featured', 'is_recommended', 'is_todays_special',
@@ -36,7 +37,20 @@ class Product extends Model
         'discount_end_date' => 'date',
     ];
 
-    protected $appends = ['current_price', 'profit_margin'];
+    protected $appends = ['current_price', 'profit_margin', 'image_url'];
+
+    public function getImageUrlAttribute(): string
+    {
+        if (! $this->image) {
+            return '/images/default-food.svg';
+        }
+
+        if (Str::startsWith($this->image, ['http://', 'https://', 'data:image/'])) {
+            return $this->image;
+        }
+
+        return '/storage/'.ltrim($this->image, '/');
+    }
 
     public function restaurant()
     {
@@ -80,6 +94,7 @@ class Product extends Model
             && now()->between($this->discount_start_date, $this->discount_end_date)) {
             return round($this->price - ($this->price * $this->discount_percentage / 100), 2);
         }
+
         return (float) $this->price;
     }
 
@@ -88,16 +103,21 @@ class Product extends Model
         if ($this->cost_price && $this->cost_price > 0) {
             return round((($this->price - $this->cost_price) / $this->price) * 100, 2);
         }
+
         return 0;
     }
 
     public function deductStock(int $quantity): bool
     {
-        if (!$this->track_inventory) return true;
-        if ($this->current_stock >= $quantity) {
-            $this->decrement('current_stock', $quantity);
+        if (! $this->track_inventory) {
             return true;
         }
+        if ($this->current_stock >= $quantity) {
+            $this->decrement('current_stock', $quantity);
+
+            return true;
+        }
+
         return false;
     }
 }

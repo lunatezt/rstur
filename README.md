@@ -31,6 +31,7 @@ A full-featured Restaurant Point of Sale (POS) system built with **Laravel 13** 
 
 - **POS Terminal** — Fast order entry with support for Dine-in, Takeaway, and Delivery
 - **Table Management** — Interactive floor plan with real-time table status
+- **Contactless Menu** — Public, table-specific QR links for guests; cashiers can scan table QR codes to open orders
 - **Kitchen Display System (KDS)** — Live order queue for kitchen staff
 - **Menu Management** — Categories, products, variants, and addon groups
 - **Order Management** — Full order lifecycle from placement to payment
@@ -79,6 +80,7 @@ This will:
 - Install PHP dependencies
 - Copy `.env.example` to `.env` and generate app key
 - Run database migrations
+- Create the public storage link for uploaded product photos
 - Install Node.js dependencies
 - Build frontend assets
 
@@ -94,13 +96,28 @@ php artisan key:generate
 
 # Configure your database in .env, then run migrations
 php artisan migrate
+php artisan storage:link
 
 # Install and build frontend
 npm install
 npm run build
 ```
 
-### 4. Start development server
+### 4. Seed the restaurant and menu
+
+On a fresh database, seed the sample restaurant, roles, and the supplied bilingual menu:
+
+```bash
+php artisan db:seed
+```
+
+For an existing seeded restaurant, update just its menu:
+
+```bash
+php artisan db:seed --class=MenuSeeder
+```
+
+### 5. Start development server
 
 ```bash
 composer run dev

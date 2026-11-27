@@ -41,7 +41,7 @@
                     {{ localCartCount }}
                 </span>
             </button>
-            <button @click="mobileTab = 'pay'"
+            <button v-if="isAdmin" @click="mobileTab = 'pay'"
                 :class="['flex-1 py-2.5 text-xs font-bold border-b-2 transition-colors', mobileTab === 'pay' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500']">
                 PAY
             </button>
@@ -68,7 +68,8 @@
                             activeCategory === cat.id
                                 ? 'bg-green-600 text-white border-green-600'
                                 : 'text-gray-700 hover:bg-white']">
-                        {{ cat.name }}
+                        <span class="block">{{ cat.name_en ?? cat.name }}</span>
+                        <span v-if="cat.name_fa" dir="rtl" class="block text-[10px] opacity-80">{{ cat.name_fa }}</span>
                     </button>
                 </div>
             </div>
@@ -116,7 +117,10 @@
                                 </span>
                             </div>
 
-                            <p class="font-medium text-gray-800 leading-tight line-clamp-2 mb-1" style="font-size:11px">{{ prod.name }}</p>
+                            <img :src="prod.image_url || '/images/default-food.svg'" :alt="prod.name_en ?? prod.name"
+                                class="w-full aspect-square object-cover rounded mb-1.5" />
+                            <p class="font-medium text-gray-800 leading-tight line-clamp-2" style="font-size:11px">{{ prod.name_en ?? prod.name }}</p>
+                            <p v-if="prod.name_fa" dir="rtl" class="text-gray-500 leading-tight line-clamp-1 mb-1" style="font-size:10px">{{ prod.name_fa }}</p>
                             <p class="font-bold text-red-600" style="font-size:11px">AFS {{ prod.price }}</p>
 
                             <!-- +/- controls -->
@@ -200,7 +204,7 @@
                                 </span>
                                 <p class="flex-1 text-xs text-gray-800 font-medium leading-tight truncate">{{ item.product_name }}</p>
                                 <span class="text-xs text-gray-500 w-5 text-center shrink-0">{{ item.quantity }}</span>
-                                <span class="text-xs font-semibold text-gray-800 w-10 text-right shrink-0">₹{{ item.item_total }}</span>
+                                <span class="text-xs font-semibold text-gray-800 w-10 text-right shrink-0">AFS {{ item.item_total }}</span>
                             </div>
                         </template>
 
@@ -224,7 +228,7 @@
                                         class="w-4 h-4 bg-red-100 text-red-600 rounded-full text-xs font-bold flex items-center justify-center hover:bg-red-200">+</button>
                                 </div>
                                 <span class="text-xs font-semibold text-orange-700 w-10 text-right shrink-0">
-                                    ₹{{ (cartItem.product.price * cartItem.qty).toFixed(0) }}
+                                    AFS {{ (cartItem.product.price * cartItem.qty).toFixed(0) }}
                                 </span>
                             </div>
                         </template>
@@ -254,7 +258,7 @@
                 </div>
 
                 <!-- Payment method -->
-                <div class="border-t px-3 py-2 shrink-0">
+                <div v-if="isAdmin" class="border-t px-3 py-2 shrink-0">
                     <div class="flex gap-1 flex-wrap">
                         <button v-for="m in paymentMethods" :key="m.key"
                             @click="payMethod = m.key"
@@ -269,29 +273,19 @@
                             class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-red-400" />
                         <span v-if="cashTendered && parseFloat(cashTendered) >= parseFloat(billTotal)"
                             class="text-xs text-green-600 font-bold shrink-0">
-                            ↩ ₹{{ (parseFloat(cashTendered) - parseFloat(billTotal)).toFixed(2) }}
+                            ↩ AFS {{ (parseFloat(cashTendered) - parseFloat(billTotal)).toFixed(2) }}
                         </span>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="border-t px-3 py-2 grid grid-cols-2 gap-1.5 shrink-0 bg-white">
-                    <button @click="sendKOT"
-                        :disabled="!localCartCount || placing"
-                        class="py-2 bg-gray-700 text-white rounded text-xs font-bold hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        KOT
-                    </button>
-                    <button @click="sendKOT"
-                        :disabled="!localCartCount || placing"
-                        class="py-2 bg-gray-500 text-white rounded text-xs font-bold hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        KOT & PRINT
-                    </button>
+                <div :class="['border-t px-3 py-2 grid gap-1.5 shrink-0 bg-white', isAdmin ? 'grid-cols-2' : 'grid-cols-1']">
                     <button @click="sendKOT"
                         :disabled="!localCartCount || placing"
                         class="py-2 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                         {{ placing ? 'Saving...' : 'SAVE' }}
                     </button>
-                    <button @click="saveAndPay"
+                    <button v-if="isAdmin" @click="saveAndPay"
                         :disabled="(!currentOrder && !localCartCount) || paying"
                         class="py-2 bg-red-600 text-white rounded text-xs font-bold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                         {{ paying ? 'Processing...' : 'SAVE & PAY' }}
@@ -337,9 +331,12 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { ArrowLeft, Search, X, UtensilsCrossed, AlertCircle } from 'lucide-vue-next'
 import api from '@/api/index.js'
+import { useAuthStore } from '@/stores/auth.js'
 
 const route  = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
+const isAdmin = computed(() => auth.user?.role?.slug === 'admin')
 
 // ── Mode detection ────────────────────────────────────────────────
 const tableId    = route.params.tableId ? parseInt(route.params.tableId) : null
@@ -397,7 +394,10 @@ const filteredProducts = computed(() => {
     if (activeCategory.value) prods = prods.filter(p => p.category_id === activeCategory.value)
     if (menuSearch.value) {
         const q = menuSearch.value.toLowerCase()
-        prods = prods.filter(p => p.name.toLowerCase().includes(q))
+        prods = prods.filter(p =>
+            (p.name_en ?? p.name).toLowerCase().includes(q)
+            || (p.name_fa ?? '').toLowerCase().includes(q)
+        )
     }
     return prods
 })
@@ -532,6 +532,10 @@ async function sendKOT() {
 }
 
 async function saveAndPay() {
+    if (!isAdmin.value) {
+        toast.error('Only admins can save and pay.')
+        return
+    }
     if (paying.value) return
 
     if (!isTableMode && !customerName.value.trim()) {

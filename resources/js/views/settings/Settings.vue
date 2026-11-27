@@ -37,8 +37,8 @@
                         <input v-model="restaurantForm.fssai_license" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Currency Symbol</label>
-                        <input v-model="restaurantForm.currency_symbol" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" placeholder="₹" />
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">Currency Code</label>
+                        <input v-model="restaurantForm.currency_symbol" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" placeholder="AFS" />
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-700 mb-1 block">Timezone</label>
@@ -223,7 +223,7 @@ const tabs = [
 
 const restaurantForm = reactive({
     name: '', email: '', phone: '', gst_number: '', fssai_license: '',
-    currency_symbol: '₹', timezone: 'Asia/Kolkata',
+    currency_symbol: 'AFS', timezone: 'Asia/Kolkata',
     operation_start_time: '09:00', operation_end_time: '23:00',
     address: '', is_24x7: false,
 })
@@ -262,7 +262,7 @@ async function loadSettings() {
             phone: restaurant.phone ?? '',
             gst_number: restaurant.gst_number ?? '',
             fssai_license: restaurant.fssai_license ?? '',
-            currency_symbol: restaurant.currency_symbol ?? '₹',
+            currency_symbol: restaurant.currency_symbol ?? 'AFS',
             timezone: restaurant.timezone ?? 'Asia/Kolkata',
             operation_start_time: (restaurant.operation_start_time ?? '09:00').substring(0, 5),
             operation_end_time: (restaurant.operation_end_time ?? '23:00').substring(0, 5),

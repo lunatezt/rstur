@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('cover_image')->nullable();
             $table->string('gst_number', 50)->nullable();
             $table->string('fssai_license', 100)->nullable();
-            $table->string('currency_symbol', 10)->default('₹');
+            $table->string('currency_symbol', 10)->default('AFS');
             $table->string('timezone', 50)->default('Asia/Kolkata');
             $table->time('operation_start_time')->default('09:00:00');
             $table->time('operation_end_time')->default('23:00:00');

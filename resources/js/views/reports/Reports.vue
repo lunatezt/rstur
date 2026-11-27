@@ -76,7 +76,7 @@
                                 class="flex items-center justify-between">
                                 <span class="text-sm capitalize text-gray-700">{{ p.payment_method.replace('_', ' ') }}</span>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-900">₹{{ fmt(p.total) }}</p>
+                                    <p class="text-sm font-semibold text-gray-900">AFS {{ fmt(p.total) }}</p>
                                     <p class="text-xs text-gray-400">{{ p.count }} txns</p>
                                 </div>
                             </div>

@@ -51,7 +51,7 @@
                                 <p class="font-medium capitalize text-gray-800">{{ p.payment_method.replace('_', ' ') }}</p>
                                 <p v-if="p.upi_transaction_id" class="text-xs text-gray-500">Txn: {{ p.upi_transaction_id }}</p>
                             </div>
-                            <span class="font-bold text-green-700">₹{{ p.amount }}</span>
+                            <span class="font-bold text-green-700">AFS {{ p.amount }}</span>
                         </div>
                     </div>
                 </div>
@@ -98,7 +98,7 @@
                             class="w-full py-2 bg-orange-500 text-white rounded-lg text-sm font-semibold hover:bg-orange-600">
                             Update Status
                         </button>
-                        <button v-if="order.status !== 'cancelled' && order.payment_status !== 'paid'" @click="cancelOrder"
+                        <button v-if="auth.hasPermission('orders.delete') && order.status !== 'cancelled' && order.payment_status !== 'paid'" @click="cancelOrder"
                             class="w-full py-2 border border-red-300 text-red-600 rounded-lg text-sm hover:bg-red-50">
                             Cancel Order
                         </button>
@@ -115,9 +115,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { ArrowLeft } from 'lucide-vue-next'
 import api from '@/api/index.js'
+import { useAuthStore } from '@/stores/auth.js'
 import StatusBadge from '@/components/StatusBadge.vue'
 
 const route = useRoute()
+const auth = useAuthStore()
 const router = useRouter()
 const order = ref(null)
 const loading = ref(false)
