@@ -29,4 +29,7 @@ not a native notifcation, the indoor notification when a user is inside the app 
 a pop up and a section to see notifications and mark them as ready
 the notfication should hold basic information about the order table number and etc...
 
-in the report section 
+
+also make the menue categores and itesm table responsive 
+also in the notficiation that comes for admin only show the meal and table name
+the kitchn should not be able to ready the whole order at once, after hitting start preparing mark ready should not be displayed 

@@ -6,6 +6,7 @@ use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\InventoryController;
 use App\Http\Controllers\API\KDSController;
+use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\ProductController;
@@ -91,6 +92,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/kds', [KDSController::class, 'index'])->middleware('permission:kitchen.view');
     Route::patch('/kds/items/{item}/status', [KDSController::class, 'updateItemStatus'])->middleware('permission:kitchen.update_status');
     Route::patch('/kds/orders/{order}/status', [KDSController::class, 'updateOrderStatus'])->middleware('permission:kitchen.update_status');
+
+    // In-app kitchen readiness notifications (admin only)
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead']);
 
     // Staff
     Route::get('/staff', [StaffController::class, 'index'])->middleware('permission:staff.manage');

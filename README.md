@@ -33,6 +33,7 @@ A full-featured Restaurant Point of Sale (POS) system built with **Laravel 13** 
 - **Table Management** — Interactive floor plan with real-time table status
 - **Contactless Menu** — Public, table-specific QR links for guests; cashiers can scan table QR codes to open orders
 - **Kitchen Display System (KDS)** — Live order queue for kitchen staff
+- **Kitchen readiness notifications** — In-app admin alerts for ready items and completed orders, with order details and a read/manage inbox
 - **Menu Management** — Categories, products, variants, and addon groups
 - **Order Management** — Full order lifecycle from placement to payment
 - **Customer Management** — Customer profiles and wallet support

@@ -50,10 +50,6 @@
                             class="flex-1 min-h-11 sm:min-h-9 px-3 py-2 bg-yellow-500 text-black rounded-lg text-xs font-bold hover:bg-yellow-400">
                             {{ $t('START PREPARING') }}
                         </button>
-                        <button v-if="order.status === 'preparing'" @click="markReady(order)"
-                            class="flex-1 min-h-11 sm:min-h-9 px-3 py-2 bg-green-500 text-white rounded-lg text-xs font-bold hover:bg-green-400">
-                            {{ $t('MARK READY') }}
-                        </button>
                     </div>
                 </div>
 
@@ -118,18 +114,33 @@ function orderBorderColor(order) {
     return 'border-blue-500'
 }
 
+function hasQueueChanged(nextOrders) {
+    if (nextOrders.length !== orders.value.length) return true
+
+    return nextOrders.some((nextOrder, orderIndex) => {
+        const currentOrder = orders.value[orderIndex]
+        if (
+            nextOrder.id !== currentOrder.id
+            || nextOrder.status !== currentOrder.status
+            || nextOrder.items.length !== currentOrder.items.length
+        ) return true
+
+        return nextOrder.items.some((nextItem, itemIndex) => {
+            const currentItem = currentOrder.items[itemIndex]
+            return nextItem.id !== currentItem.id
+                || nextItem.item_status !== currentItem.item_status
+                || nextItem.quantity !== currentItem.quantity
+        })
+    })
+}
+
 async function loadOrders() {
     const { data } = await api.get('/kds')
-    orders.value = data.orders
+    if (hasQueueChanged(data.orders)) orders.value = data.orders
 }
 
 async function markPreparing(order) {
     await api.patch(`/kds/orders/${order.id}/status`, { status: 'preparing' })
-    await loadOrders()
-}
-
-async function markReady(order) {
-    await api.patch(`/kds/orders/${order.id}/status`, { status: 'ready' })
     await loadOrders()
 }
 

@@ -1,11 +1,11 @@
 <template>
-    <div class="p-6">
+    <div class="min-w-0 p-3 sm:p-6">
         <!-- Tabs -->
-        <div class="flex gap-4 mb-6">
-            <button @click="tab = 'categories'" :class="['px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors', tab === 'categories' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
+        <div class="flex flex-wrap gap-2 sm:gap-4 mb-4 sm:mb-6">
+            <button @click="tab = 'categories'" :class="['flex-1 sm:flex-none px-3 sm:px-5 py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-colors', tab === 'categories' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
                 {{ $t('Categories ({count})', { count: categories.length }) }}
             </button>
-            <button @click="tab = 'products'" :class="['px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors', tab === 'products' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
+            <button @click="tab = 'products'" :class="['flex-1 sm:flex-none px-3 sm:px-5 py-2.5 rounded-lg font-semibold text-xs sm:text-sm transition-colors', tab === 'products' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
                 {{ $t('Products ({count})', { count: products.total ?? 0 }) }}
             </button>
         </div>
@@ -13,24 +13,24 @@
         <!-- Categories Tab -->
         <div v-if="tab === 'categories'">
             <div class="flex justify-end mb-4">
-                <button @click="openCategoryForm()" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2">
+                <button @click="openCategoryForm()" class="w-full sm:w-auto justify-center bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2">
                     <Plus class="w-4 h-4" /> {{ $t('Add Category') }}
                 </button>
             </div>
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <table class="w-full">
+            <div class="overflow-x-auto overscroll-x-contain rounded-xl bg-white shadow-sm">
+                <table class="w-full min-w-[680px]">
                     <thead class="bg-gray-50 border-b">
                         <tr>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Name') }}</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Products') }}</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Display') }}</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Status') }}</th>
-                            <th class="px-6 py-3"></th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Name') }}</th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Products') }}</th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Display') }}</th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Status') }}</th>
+                            <th class="px-3 sm:px-6 py-3"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
                         <tr v-for="cat in categories" :key="cat.id" class="hover:bg-gray-50">
-                            <td class="px-6 py-4">
+                            <td class="px-3 sm:px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
                                         <span class="text-orange-500 text-sm">{{ cat.name.charAt(0) }}</span>
@@ -41,19 +41,19 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-gray-600">{{ cat.products_count }}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 sm:px-6 py-4 text-gray-600">{{ cat.products_count }}</td>
+                            <td class="px-3 sm:px-6 py-4">
                                 <div class="flex gap-1">
                                     <span v-if="cat.display_in_pos" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{{ $t('POS') }}</span>
                                     <span v-if="cat.display_in_kds" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">{{ $t('KDS') }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 sm:px-6 py-4">
                                 <span :class="cat.is_active ? 'text-green-600' : 'text-red-500'" class="text-sm font-medium">
                                     {{ $t(cat.is_active ? 'Active' : 'Inactive') }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-3 sm:px-6 py-4 text-right">
                                 <button @click="openCategoryForm(cat)" class="text-orange-500 hover:underline text-sm mr-3">{{ $t('Edit') }}</button>
                                 <button @click="deleteCategory(cat)" class="text-red-500 hover:underline text-sm">{{ $t('Delete') }}</button>
                             </td>
@@ -65,31 +65,31 @@
 
         <!-- Products Tab -->
         <div v-else>
-            <div class="flex items-center gap-3 mb-4">
-                <select v-model="productFilters.category_id" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                <select v-model="productFilters.category_id" class="w-full sm:w-auto min-w-0 border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     <option value="">{{ $t('All Categories') }}</option>
                     <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name_en ?? c.name }}{{ c.name_fa ? ` / ${c.name_fa}` : '' }}</option>
                 </select>
-                <input v-model="productFilters.search" :placeholder="$t('Search products...')" class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1" />
-                <button @click="openProductForm()" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2 flex-shrink-0">
+                <input v-model="productFilters.search" :placeholder="$t('Search products...')" class="w-full sm:w-auto min-w-0 border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1" />
+                <button @click="openProductForm()" class="w-full sm:w-auto justify-center bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2 flex-shrink-0">
                     <Plus class="w-4 h-4" /> {{ $t('Add Product') }}
                 </button>
             </div>
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <table class="w-full">
+            <div class="overflow-x-auto overscroll-x-contain rounded-xl bg-white shadow-sm">
+                <table class="w-full min-w-[900px]">
                     <thead class="bg-gray-50 border-b">
                         <tr>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Product') }}</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Category') }}</th>
-                            <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Price') }}</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Type') }}</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Availability') }}</th>
-                            <th class="px-6 py-3"></th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Product') }}</th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Category') }}</th>
+                            <th class="text-right px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Price') }}</th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Type') }}</th>
+                            <th class="text-left px-3 sm:px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Availability') }}</th>
+                            <th class="px-3 sm:px-6 py-3"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
                         <tr v-for="product in productList" :key="product.id" class="hover:bg-gray-50">
-                            <td class="px-6 py-4">
+                            <td class="px-3 sm:px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                         <img :src="product.image_url || '/images/default-food.svg'" :alt="product.name_en ?? product.name" class="w-full h-full object-cover" />
@@ -101,21 +101,21 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
+                            <td class="px-3 sm:px-6 py-4 text-sm text-gray-600">
                                 <span>{{ product.category?.name_en ?? product.category?.name }}</span>
                                 <span v-if="product.category?.name_fa" dir="rtl" class="block text-xs text-gray-500">{{ product.category.name_fa }}</span>
                             </td>
-                            <td class="px-6 py-4 text-right font-semibold text-gray-900">AFS {{ product.price }}</td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 sm:px-6 py-4 text-right font-semibold text-gray-900">AFS {{ product.price }}</td>
+                            <td class="px-3 sm:px-6 py-4">
                                 <div :class="['w-4 h-4 rounded-full border-2', product.is_veg ? 'border-green-500 bg-green-100' : 'border-red-500 bg-red-100']"></div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-3 sm:px-6 py-4">
                                 <button @click="toggleAvailability(product)"
                                     :class="['px-3 py-1 rounded-full text-xs font-medium transition-colors', product.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
                                     {{ $t(product.is_available ? 'Available' : 'Unavailable') }}
                                 </button>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-3 sm:px-6 py-4 text-right">
                                 <button @click="openProductForm(product)" class="text-orange-500 hover:underline text-sm mr-3">{{ $t('Edit') }}</button>
                                 <button @click="deleteProduct(product)" class="text-red-500 hover:underline text-sm">{{ $t('Delete') }}</button>
                             </td>
