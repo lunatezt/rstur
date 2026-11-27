@@ -4,8 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -16,21 +16,38 @@ class ProductController extends Controller
         $query = Product::where('restaurant_id', $restaurantId)
             ->with(['category', 'taxCategory', 'variants', 'addons'])
             ->orderBy('display_order')
-            ->orderBy('name');
+            ->orderBy('name_en');
 
-        if ($request->has('category_id')) $query->where('category_id', $request->category_id);
-        if ($request->boolean('pos_only')) $query->where('is_available', true)->where('is_active', true);
-        if ($request->has('is_veg')) $query->where('is_veg', $request->boolean('is_veg'));
-        if ($request->has('search')) $query->where('name', 'like', '%' . $request->search . '%');
-        if ($request->has('featured')) $query->where('is_featured', true);
+        if ($request->has('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        if ($request->boolean('pos_only')) {
+            $query->where('is_available', true)->where('is_active', true);
+        }
+        if ($request->has('is_veg')) {
+            $query->where('is_veg', $request->boolean('is_veg'));
+        }
+        if ($request->has('search')) {
+            $query->where(function ($searchQuery) use ($request) {
+                $term = '%'.$request->search.'%';
+                $searchQuery->where('name_en', 'like', $term)
+                    ->orWhere('name_fa', 'like', $term)
+                    ->orWhere('name', 'like', $term);
+            });
+        }
+        if ($request->has('featured')) {
+            $query->where('is_featured', true);
+        }
 
         $perPage = $request->integer('per_page', 50);
+
         return response()->json(['products' => $query->paginate($perPage)]);
     }
 
     public function show(Request $request, Product $product)
     {
         abort_if($product->restaurant_id !== $request->user()->restaurant_id, 403);
+
         return response()->json(['product' => $product->load(['category', 'taxCategory', 'variants', 'addons', 'addonGroups.items', 'recipeIngredients.inventoryItem'])]);
     }
 
@@ -40,10 +57,11 @@ class ProductController extends Controller
         $validated = $request->validate([
             'category_id' => 'required|exists:categories,id',
             'tax_category_id' => 'nullable|exists:tax_categories,id',
-            'name' => 'required|string|max:255',
+            'name_en' => 'required|string|max:255',
+            'name_fa' => 'required|string|max:255',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
-            'image' => 'nullable|string',
+            'image' => 'nullable|image|max:5120',
             'price' => 'required|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'mrp' => 'nullable|numeric|min:0',
@@ -65,14 +83,20 @@ class ProductController extends Controller
         ]);
 
         $validated['restaurant_id'] = $restaurantId;
-        $validated['slug'] = $this->uniqueSlug($restaurantId, Str::slug($validated['name']));
+        $validated['name'] = $validated['name_en'];
+        $validated['slug'] = $this->uniqueSlug($restaurantId, Str::slug($validated['name_en']));
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store("products/{$restaurantId}", 'public');
+        } else {
+            unset($validated['image']);
+        }
 
         $variants = $validated['variants'] ?? [];
         unset($validated['variants']);
 
         $product = Product::create($validated);
 
-        if (!empty($variants)) {
+        if (! empty($variants)) {
             $product->variants()->createMany($variants);
         }
 
@@ -85,14 +109,15 @@ class ProductController extends Controller
         $validated = $request->validate([
             'category_id' => 'sometimes|exists:categories,id',
             'tax_category_id' => 'nullable|exists:tax_categories,id',
-            'name' => 'sometimes|string|max:255',
+            'name_en' => 'sometimes|required|string|max:255',
+            'name_fa' => 'sometimes|required|string|max:255',
             'price' => 'sometimes|numeric|min:0',
             'cost_price' => 'nullable|numeric|min:0',
             'is_veg' => 'boolean',
             'is_available' => 'boolean',
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
-            'image' => 'nullable|string',
+            'image' => 'sometimes|nullable|image|max:5120',
             'short_description' => 'nullable|string',
             'description' => 'nullable|string',
             'preparation_time_minutes' => 'integer|min:0',
@@ -102,25 +127,41 @@ class ProductController extends Controller
             'tags' => 'nullable|array',
         ]);
 
-        if (isset($validated['name'])) {
-            $validated['slug'] = $this->uniqueSlug($product->restaurant_id, Str::slug($validated['name']), $product->id);
+        if (isset($validated['name_en'])) {
+            $validated['name'] = $validated['name_en'];
+            $validated['slug'] = $this->uniqueSlug($product->restaurant_id, Str::slug($validated['name_en']), $product->id);
+        }
+
+        $oldImage = $product->image;
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store("products/{$product->restaurant_id}", 'public');
+        } elseif (array_key_exists('image', $validated)) {
+            $validated['image'] = null;
         }
 
         $product->update($validated);
+        if ($oldImage !== $product->image) {
+            $this->deleteStoredImage($oldImage);
+        }
+
         return response()->json(['product' => $product->load(['category', 'taxCategory', 'variants', 'addons'])]);
     }
 
     public function destroy(Request $request, Product $product)
     {
         abort_if($product->restaurant_id !== $request->user()->restaurant_id, 403);
+        $image = $product->image;
         $product->delete();
+        $this->deleteStoredImage($image);
+
         return response()->json(['message' => 'Product deleted.']);
     }
 
     public function toggleAvailability(Request $request, Product $product)
     {
         abort_if($product->restaurant_id !== $request->user()->restaurant_id, 403);
-        $product->update(['is_available' => !$product->is_available]);
+        $product->update(['is_available' => ! $product->is_available]);
+
         return response()->json(['product' => $product]);
     }
 
@@ -130,10 +171,22 @@ class ProductController extends Controller
         $count = 1;
         while (true) {
             $query = Product::where('restaurant_id', $restaurantId)->where('slug', $slug);
-            if ($excludeId) $query->where('id', '!=', $excludeId);
-            if (!$query->exists()) break;
-            $slug = $original . '-' . $count++;
+            if ($excludeId) {
+                $query->where('id', '!=', $excludeId);
+            }
+            if (! $query->exists()) {
+                break;
+            }
+            $slug = $original.'-'.$count++;
         }
+
         return $slug;
+    }
+
+    private function deleteStoredImage(?string $path): void
+    {
+        if ($path && Str::startsWith($path, 'products/')) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

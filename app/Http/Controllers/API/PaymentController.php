@@ -15,6 +15,7 @@ class PaymentController extends Controller
     public function process(Request $request, Order $order)
     {
         abort_if($order->restaurant_id !== $request->user()->restaurant_id, 403);
+        abort_unless($request->user()->role?->slug === 'admin', 403, 'Only restaurant admins can process payments.');
 
         $validated = $request->validate([
             'payments' => 'required|array|min:1',

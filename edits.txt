@@ -1,0 +1,39 @@
+first in the user login section, please remove the username email login section, in the pin login section set the branch number by default to 1 and remove the input field jsut keep the pin section
+
+for the admin section add the mange(CRUD) user section to add users and assign it a kitchen or cashier rule with a pin
+
+change the menue migration and add and English name and persian name for each food and category of menus add photo section for each food not for catagories
+
+in the mangeing menu item section first configure the storage for photo storage, store the photo path in the database
+and also put a default photo for every food without a photo, ask for both English and persian name of each food and category if needed
+display photos of foods in the menu section and in the table ordering section 
+
+
+why the contactless section does not work it generate a fake url that does not get to anywhere
+
+
+the cashier and kitchen does not need to see the dashboardor other sections
+once they login the cashier only the table pos section and order sections, in the table pos section the cashiter should not see the save and pay save and pay only for the admin
+the kitchen only the kitchen section
+
+replace the currency with AFS everywhere possible 
+
+
+set the  side menu in the colpase form as default for smaller screens 
+
+
+
+
+notification system between kitchen and admin if the whole order is ready or any individual item is ready the cashier account should recive a notifcation
+not a native notifcation, the indoor notification when a user is inside the app can see the notification not a native notification 
+a pop up and a section to see notifications and mark them as ready
+the notfication should hold basic information about the order table number and etc...
+
+
+also make the menue categores and itesm table responsive 
+also in the notficiation that comes for admin only show the meal and table name
+the kitchn should not be able to ready the whole order at once, after hitting start preparing mark ready should not be displayed
+
+
+
+in the small screens and the 

@@ -31,13 +31,16 @@ A full-featured Restaurant Point of Sale (POS) system built with **Laravel 13** 
 
 - **POS Terminal** — Fast order entry with support for Dine-in, Takeaway, and Delivery
 - **Table Management** — Interactive floor plan with real-time table status
+- **Contactless Menu** — Public, table-specific QR links for guests; cashiers can scan table QR codes to open orders
 - **Kitchen Display System (KDS)** — Live order queue for kitchen staff
+- **Kitchen readiness notifications** — In-app admin alerts for ready items and completed orders, with order details and a read/manage inbox
 - **Menu Management** — Categories, products, variants, and addon groups
 - **Order Management** — Full order lifecycle from placement to payment
 - **Customer Management** — Customer profiles and wallet support
 - **Inventory Management** — Stock tracking and purchase orders
 - **Reports & Analytics** — Sales reports and business insights
 - **Roles & Permissions** — Granular access control per staff role
+- **Localization** — English and Dari interface with RTL layout; food and category names always remain bilingual
 - **Multi-restaurant Support** — Organization-level multi-branch management
 - **Authentication** — Secure API auth via Laravel Sanctum
 
@@ -79,6 +82,7 @@ This will:
 - Install PHP dependencies
 - Copy `.env.example` to `.env` and generate app key
 - Run database migrations
+- Create the public storage link for uploaded product photos
 - Install Node.js dependencies
 - Build frontend assets
 
@@ -94,13 +98,28 @@ php artisan key:generate
 
 # Configure your database in .env, then run migrations
 php artisan migrate
+php artisan storage:link
 
 # Install and build frontend
 npm install
 npm run build
 ```
 
-### 4. Start development server
+### 4. Seed the restaurant and menu
+
+On a fresh database, seed the sample restaurant, roles, and the supplied bilingual menu:
+
+```bash
+php artisan db:seed
+```
+
+For an existing seeded restaurant, update just its menu:
+
+```bash
+php artisan db:seed --class=MenuSeeder
+```
+
+### 5. Start development server
 
 ```bash
 composer run dev
@@ -109,6 +128,8 @@ composer run dev
 This starts Laravel server, queue worker, log watcher, and Vite dev server concurrently.
 
 The app will be available at `http://localhost:8000`.
+
+Use the language selector in the login screen or application header to switch between English and Dari. The preference is stored in the current browser, and Dari enables right-to-left layout. Food and category names are displayed in both English and Persian regardless of the selected interface language.
 
 ## Project Structure
 

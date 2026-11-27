@@ -60,10 +60,10 @@ class DashboardController extends Controller
             ->where('orders.restaurant_id', $restaurantId)
             ->whereDate('orders.created_at', $today)
             ->where('orders.status', '!=', 'cancelled')
-            ->select('products.id', 'products.name', 'products.image',
+            ->select('products.id', 'products.name', 'products.name_en', 'products.name_fa', 'products.image',
                 DB::raw('SUM(order_items.quantity) as total_qty'),
                 DB::raw('SUM(order_items.item_total) as total_revenue'))
-            ->groupBy('products.id', 'products.name', 'products.image')
+            ->groupBy('products.id', 'products.name', 'products.name_en', 'products.name_fa', 'products.image')
             ->orderByDesc('total_qty')
             ->limit(5)
             ->get();

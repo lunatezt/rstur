@@ -1,47 +1,47 @@
 <template>
     <div class="overflow-y-auto h-full">
         <div class="p-4 max-w-3xl mx-auto">
-            <h1 class="text-sm font-bold text-gray-800 mb-4">Settings</h1>
+            <h1 class="text-sm font-bold text-gray-800 mb-4">{{ $t('Settings') }}</h1>
 
             <!-- Tabs -->
             <div class="flex gap-1.5 mb-4 flex-wrap">
                 <button v-for="t in tabs" :key="t.key" @click="tab = t.key"
                     :class="['px-3 py-1.5 rounded text-xs font-medium transition-colors',
                         tab === t.key ? 'bg-red-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200']">
-                    {{ t.label }}
+                    {{ $t(t.label) }}
                 </button>
             </div>
 
             <!-- Restaurant Settings -->
             <div v-if="tab === 'restaurant'" class="bg-white rounded-lg shadow-sm p-4">
-                <h2 class="font-bold text-sm text-gray-800 mb-3">Restaurant Information</h2>
+                <h2 class="font-bold text-sm text-gray-800 mb-3">{{ $t('Restaurant Information') }}</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Restaurant Name</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Restaurant Name') }}</label>
                         <input v-model="restaurantForm.name" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Email</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Email') }}</label>
                         <input v-model="restaurantForm.email" type="email" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Phone</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Phone') }}</label>
                         <input v-model="restaurantForm.phone" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">GST Number</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('GST Number') }}</label>
                         <input v-model="restaurantForm.gst_number" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">FSSAI License</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('FSSAI License') }}</label>
                         <input v-model="restaurantForm.fssai_license" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Currency Symbol</label>
-                        <input v-model="restaurantForm.currency_symbol" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" placeholder="₹" />
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Currency Code') }}</label>
+                        <input v-model="restaurantForm.currency_symbol" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" placeholder="AFS" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Timezone</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Timezone') }}</label>
                         <select v-model="restaurantForm.timezone" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
                             <option value="UTC">UTC</option>
@@ -49,36 +49,36 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Open Time</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Open Time') }}</label>
                         <input v-model="restaurantForm.operation_start_time" type="time" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Close Time</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Close Time') }}</label>
                         <input v-model="restaurantForm.operation_end_time" type="time" class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
                     </div>
                     <div class="sm:col-span-2">
-                        <label class="text-xs font-medium text-gray-700 mb-1 block">Address</label>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Address') }}</label>
                         <textarea v-model="restaurantForm.address" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none resize-none"></textarea>
                     </div>
                     <div class="flex items-center gap-2">
                         <input v-model="restaurantForm.is_24x7" type="checkbox" id="is24x7" class="w-3.5 h-3.5 accent-red-600" />
-                        <label for="is24x7" class="text-xs font-medium text-gray-700">Open 24/7</label>
+                        <label for="is24x7" class="text-xs font-medium text-gray-700">{{ $t('Open 24/7') }}</label>
                     </div>
                 </div>
                 <div class="mt-4 flex justify-end">
                     <button @click="saveRestaurant" class="bg-red-600 text-white px-4 py-2 rounded text-xs font-semibold hover:bg-red-700">
-                        Save Changes
+                        {{ $t('Save Changes') }}
                     </button>
                 </div>
             </div>
 
             <!-- Branding -->
             <div v-if="tab === 'branding'" class="bg-white rounded-lg shadow-sm p-4">
-                <h2 class="font-bold text-sm text-gray-800 mb-3">Branding Settings</h2>
+                <h2 class="font-bold text-sm text-gray-800 mb-3">{{ $t('Branding Settings') }}</h2>
 
                 <!-- Logo -->
                 <div class="mb-4">
-                    <label class="text-xs font-medium text-gray-700 mb-2 block">Restaurant Logo</label>
+                    <label class="text-xs font-medium text-gray-700 mb-2 block">{{ $t('Restaurant Logo') }}</label>
                     <div class="flex items-center gap-4">
                         <div class="w-14 h-14 rounded-lg border-2 flex items-center justify-center overflow-hidden shrink-0"
                             :style="brandingForm.logo_url ? '' : { borderColor: brandingForm.primary_color, background: brandingForm.primary_color }">
@@ -89,14 +89,14 @@
                             <div class="flex items-center gap-2">
                                 <input type="file" id="logoUpload" accept="image/*" @change="handleLogoUpload" class="hidden" />
                                 <label for="logoUpload" class="cursor-pointer bg-gray-100 text-gray-700 px-3 py-1.5 rounded text-xs hover:bg-gray-200 border border-gray-300">
-                                    Upload Image
+                                    {{ $t('Upload Image') }}
                                 </label>
                                 <button v-if="brandingForm.logo_url" @click="brandingForm.logo_url = ''"
-                                    class="text-xs text-red-500 hover:text-red-700">Remove</button>
+                                    class="text-xs text-red-500 hover:text-red-700">{{ $t('Remove') }}</button>
                             </div>
-                            <p class="text-xs text-gray-400">PNG, JPG up to 2MB. Will be shown in sidebar.</p>
+                            <p class="text-xs text-gray-400">{{ $t('PNG, JPG up to 2MB. Will be shown in sidebar.') }}</p>
                             <div class="flex items-center gap-2">
-                                <span class="text-xs text-gray-600">Or enter URL:</span>
+                                <span class="text-xs text-gray-600">{{ $t('Or enter URL:') }}</span>
                                 <input v-model="brandingForm.logo_url" placeholder="https://..."
                                     class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-red-400" />
                             </div>
@@ -106,7 +106,7 @@
 
                 <!-- Primary Color -->
                 <div class="mb-4">
-                    <label class="text-xs font-medium text-gray-700 mb-2 block">Primary Color</label>
+                    <label class="text-xs font-medium text-gray-700 mb-2 block">{{ $t('Primary Color') }}</label>
                     <div class="flex items-center gap-3 flex-wrap">
                         <input type="color" v-model="brandingForm.primary_color"
                             class="w-10 h-10 rounded cursor-pointer border border-gray-300 p-0.5" />
@@ -123,16 +123,16 @@
                     </div>
                     <div class="mt-2 flex items-center gap-2">
                         <div class="w-8 h-8 rounded" :style="{ background: brandingForm.primary_color }"></div>
-                        <span class="text-xs text-gray-500">Preview</span>
+                        <span class="text-xs text-gray-500">{{ $t('Preview') }}</span>
                         <button class="px-3 py-1 rounded text-white text-xs font-bold" :style="{ background: brandingForm.primary_color }">
-                            Button Preview
+                            {{ $t('Button Preview') }}
                         </button>
                     </div>
                 </div>
 
                 <div class="mt-4 flex justify-end">
                     <button @click="saveBranding" class="bg-red-600 text-white px-4 py-2 rounded text-xs font-semibold hover:bg-red-700">
-                        Save Branding
+                        {{ $t('Save Branding') }}
                     </button>
                 </div>
             </div>
@@ -140,20 +140,20 @@
             <!-- Tax Categories -->
             <div v-if="tab === 'taxes'" class="bg-white rounded-lg shadow-sm p-4">
                 <div class="flex items-center justify-between mb-3">
-                    <h2 class="font-bold text-sm text-gray-800">Tax Categories</h2>
+                    <h2 class="font-bold text-sm text-gray-800">{{ $t('Tax Categories') }}</h2>
                     <button @click="showTaxForm = true"
                         class="bg-red-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-red-700 flex items-center gap-1.5">
-                        <Plus class="w-3 h-3" /> Add Tax
+                        <Plus class="w-3 h-3" /> {{ $t('Add Tax') }}
                     </button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs">
                         <thead class="border-b">
                             <tr>
-                                <th class="text-left py-2 font-semibold text-gray-500">Name</th>
-                                <th class="text-right py-2 font-semibold text-gray-500">Total %</th>
-                                <th class="text-right py-2 font-semibold text-gray-500">CGST %</th>
-                                <th class="text-right py-2 font-semibold text-gray-500">SGST %</th>
+                                <th class="text-left py-2 font-semibold text-gray-500">{{ $t('Name') }}</th>
+                                <th class="text-right py-2 font-semibold text-gray-500">{{ $t('Total %') }}</th>
+                                <th class="text-right py-2 font-semibold text-gray-500">{{ $t('CGST %') }}</th>
+                                <th class="text-right py-2 font-semibold text-gray-500">{{ $t('SGST %') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
@@ -174,34 +174,34 @@
     <Teleport to="body">
         <div v-if="showTaxForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-xl w-full max-w-sm p-5">
-                <h3 class="font-bold text-sm mb-3">Add Tax Category</h3>
+                <h3 class="font-bold text-sm mb-3">{{ $t('Add Tax Category') }}</h3>
                 <div class="space-y-2.5">
                     <div>
-                        <label class="text-xs font-medium mb-1 block">Name *</label>
-                        <input v-model="taxForm.name" placeholder="e.g. GST 5%"
+                        <label class="text-xs font-medium mb-1 block">{{ $t('Name *') }}</label>
+                        <input v-model="taxForm.name" :placeholder="$t('e.g. GST 5%')"
                             class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-xs font-medium mb-1 block">Total Tax % *</label>
+                        <label class="text-xs font-medium mb-1 block">{{ $t('Total Tax % *') }}</label>
                         <input v-model="taxForm.tax_percentage" type="number" step="0.01"
                             class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-red-500 outline-none" />
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-xs font-medium mb-1 block">CGST %</label>
+                            <label class="text-xs font-medium mb-1 block">{{ $t('CGST %') }}</label>
                             <input v-model="taxForm.cgst_percentage" type="number" step="0.01"
                                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-red-400" />
                         </div>
                         <div>
-                            <label class="text-xs font-medium mb-1 block">SGST %</label>
+                            <label class="text-xs font-medium mb-1 block">{{ $t('SGST %') }}</label>
                             <input v-model="taxForm.sgst_percentage" type="number" step="0.01"
                                 class="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-red-400" />
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-2 mt-4">
-                    <button @click="showTaxForm = false" class="flex-1 py-2 border rounded text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button @click="saveTax" class="flex-1 py-2 bg-red-600 text-white rounded text-xs font-semibold">Save</button>
+                    <button @click="showTaxForm = false" class="flex-1 py-2 border rounded text-xs text-gray-600 hover:bg-gray-50">{{ $t('Cancel') }}</button>
+                    <button @click="saveTax" class="flex-1 py-2 bg-red-600 text-white rounded text-xs font-semibold">{{ $t('Save') }}</button>
                 </div>
             </div>
         </div>
@@ -213,6 +213,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { toast } from 'vue3-toastify'
 import { Plus } from 'lucide-vue-next'
 import api from '@/api/index.js'
+import { t } from '@/localization.js'
 
 const tab = ref('restaurant')
 const tabs = [
@@ -223,7 +224,7 @@ const tabs = [
 
 const restaurantForm = reactive({
     name: '', email: '', phone: '', gst_number: '', fssai_license: '',
-    currency_symbol: '₹', timezone: 'Asia/Kolkata',
+    currency_symbol: 'AFS', timezone: 'Asia/Kolkata',
     operation_start_time: '09:00', operation_end_time: '23:00',
     address: '', is_24x7: false,
 })
@@ -262,7 +263,7 @@ async function loadSettings() {
             phone: restaurant.phone ?? '',
             gst_number: restaurant.gst_number ?? '',
             fssai_license: restaurant.fssai_license ?? '',
-            currency_symbol: restaurant.currency_symbol ?? '₹',
+            currency_symbol: restaurant.currency_symbol ?? 'AFS',
             timezone: restaurant.timezone ?? 'Asia/Kolkata',
             operation_start_time: (restaurant.operation_start_time ?? '09:00').substring(0, 5),
             operation_end_time: (restaurant.operation_end_time ?? '23:00').substring(0, 5),
@@ -276,7 +277,7 @@ async function loadSettings() {
 
         taxCategories.value = taxRes.data.tax_categories
     } catch (err) {
-        toast.error('Failed to load settings')
+        toast.error(t('Failed to load settings'))
     }
 }
 
@@ -285,9 +286,9 @@ async function saveRestaurant() {
         await api.put('/settings/restaurant', {
             ...restaurantForm,
         })
-        toast.success('Restaurant settings saved')
+        toast.success(t('Restaurant settings saved'))
     } catch {
-        toast.error('Failed to save settings')
+        toast.error(t('Failed to save settings'))
     }
 }
 
@@ -303,9 +304,9 @@ async function saveBranding() {
                 logo_url: brandingForm.logo_url,
             },
         })
-        toast.success('Branding saved! Refresh to see changes in sidebar.')
+        toast.success(t('Branding saved! Refresh to see changes in sidebar.'))
     } catch {
-        toast.error('Failed to save branding')
+        toast.error(t('Failed to save branding'))
     }
 }
 
@@ -313,7 +314,7 @@ function handleLogoUpload(event) {
     const file = event.target.files?.[0]
     if (!file) return
     if (file.size > 2 * 1024 * 1024) {
-        toast.warning('Image must be under 2MB')
+        toast.warning(t('Image must be under 2MB'))
         return
     }
     const reader = new FileReader()
@@ -326,13 +327,13 @@ function handleLogoUpload(event) {
 async function saveTax() {
     try {
         await api.post('/settings/tax-categories', taxForm)
-        toast.success('Tax category created')
+        toast.success(t('Tax category created'))
         showTaxForm.value = false
         Object.assign(taxForm, { name: '', tax_percentage: '', cgst_percentage: '', sgst_percentage: '' })
         const { data } = await api.get('/settings/tax-categories')
         taxCategories.value = data.tax_categories
     } catch {
-        toast.error('Failed to save tax category')
+        toast.error(t('Failed to save tax category'))
     }
 }
 

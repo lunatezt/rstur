@@ -9,6 +9,12 @@ const routes = [
         meta: { requiresGuest: true },
     },
     {
+        path: '/contactless',
+        name: 'contactless-menu',
+        component: () => import('@/views/tables/ContactlessMenu.vue'),
+        meta: { optionalAuth: true },
+    },
+    {
         path: '/',
         component: () => import('@/layouts/AppLayout.vue'),
         meta: { requiresAuth: true },
@@ -20,6 +26,7 @@ const routes = [
             { path: 'tables', name: 'tables', component: () => import('@/views/tables/TableFloorPlan.vue') },
             { path: 'table-setup', name: 'table-setup', component: () => import('@/views/tables/TableManagement.vue') },
             { path: 'customers', name: 'customers', component: () => import('@/views/customers/CustomerList.vue') },
+            { path: 'staff', name: 'staff', component: () => import('@/views/staff/StaffManagement.vue') },
             { path: 'inventory', name: 'inventory', component: () => import('@/views/inventory/Inventory.vue') },
             { path: 'reports', name: 'reports', component: () => import('@/views/reports/Reports.vue') },
             { path: 'settings', name: 'settings', component: () => import('@/views/settings/Settings.vue') },
@@ -29,8 +36,8 @@ const routes = [
         // Table order terminal — fullscreen, no sidebar
         path: '/tables/:tableId/order',
         name: 'table-order',
-        component: () => import('@/views/tables/TableOrderTerminal.vue'),
-        meta: { requiresAuth: true, fullscreen: true },
+        component: () => import('@/views/tables/TableOrderEntry.vue'),
+        meta: { optionalAuth: true, fullscreen: true },
     },
     {
         // Delivery / Takeaway standalone terminal — fullscreen
@@ -53,20 +60,40 @@ const router = createRouter({
     routes,
 })
 
+const roleRouteAccess = {
+    cashier: {
+        home: 'tables',
+        allowed: new Set(['tables', 'orders', 'order-detail', 'table-order']),
+    },
+    kitchen_staff: {
+        home: 'kds',
+        allowed: new Set(['kds']),
+    },
+}
+
+function homeRouteForUser(user) {
+    return { name: roleRouteAccess[user?.role?.slug]?.home ?? 'dashboard' }
+}
+
 router.beforeEach(async (to) => {
     const auth = useAuthStore()
 
+    if ((to.meta.requiresAuth || to.meta.optionalAuth) && !auth.isAuthenticated && auth.token) {
+        const ok = await auth.fetchUser()
+        if (!ok && to.meta.requiresAuth) return { name: 'login' }
+    }
+
     if (to.meta.requiresAuth && !auth.isAuthenticated) {
-        if (auth.token) {
-            const ok = await auth.fetchUser()
-            if (!ok) return { name: 'login' }
-        } else {
-            return { name: 'login' }
-        }
+        return { name: 'login' }
     }
 
     if (to.meta.requiresGuest && auth.isAuthenticated) {
-        return { name: 'dashboard' }
+        return homeRouteForUser(auth.user)
+    }
+
+    const roleAccess = roleRouteAccess[auth.user?.role?.slug]
+    if (roleAccess && !roleAccess.allowed.has(to.name)) {
+        return { name: roleAccess.home }
     }
 })
 

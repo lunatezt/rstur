@@ -5,24 +5,29 @@
         <div class="bg-gray-800 text-white px-3 py-2 flex items-center gap-2 shrink-0">
             <button @click="router.push({ name: isTableMode ? 'tables' : 'tables' })"
                 class="flex items-center gap-1 text-xs text-gray-300 hover:text-white px-2 py-1.5 rounded hover:bg-gray-700 transition-colors shrink-0">
-                <ArrowLeft class="w-3.5 h-3.5" /> Back
+                <ArrowLeft class="w-3.5 h-3.5" /> {{ $t('Back') }}
             </button>
             <div class="h-4 border-l border-gray-600 shrink-0"></div>
             <div class="flex-1 min-w-0">
                 <span class="font-bold text-sm">
-                    {{ isTableMode ? (table?.name ?? 'Loading...') : orderTypeLabel }}
+                    {{ isTableMode ? (table?.name ?? $t('Loading...')) : orderTypeLabel }}
                 </span>
                 <span v-if="isTableMode && table?.section" class="text-gray-400 text-xs ml-2">{{ table.section.name }}</span>
                 <span v-if="currentOrder" class="ml-2 text-xs bg-blue-600 px-2 py-0.5 rounded-full">
                     {{ currentOrder.order_number }}
                 </span>
             </div>
+            <select :value="locale" @change="setLocale($event.target.value)" :aria-label="$t('Language')"
+                class="border border-gray-600 rounded px-2 py-1 text-xs bg-gray-800 text-white shrink-0">
+                <option value="en">English</option>
+                <option value="prs">دری</option>
+            </select>
             <!-- Order type tabs -->
             <div class="flex border border-gray-600 rounded overflow-hidden text-xs font-bold shrink-0">
                 <button v-for="t in orderTypes" :key="t.value"
                     @click="orderType = t.value"
                     :class="['px-3 py-1.5 transition-colors', orderType === t.value ? 'bg-red-600 text-white' : 'text-gray-300 hover:bg-gray-700']">
-                    {{ t.label }}
+                    {{ $t(t.label) }}
                 </button>
             </div>
         </div>
@@ -31,19 +36,19 @@
         <div class="flex border-b bg-white md:hidden shrink-0">
             <button @click="mobileTab = 'menu'"
                 :class="['flex-1 py-2.5 text-xs font-bold border-b-2 transition-colors', mobileTab === 'menu' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500']">
-                MENU
+                {{ $t('MENU') }}
             </button>
             <button @click="mobileTab = 'cart'"
                 :class="['flex-1 py-2.5 text-xs font-bold border-b-2 transition-colors relative', mobileTab === 'cart' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500']">
-                CART
+                {{ $t('CART') }}
                 <span v-if="localCartCount > 0"
                     class="absolute top-1.5 right-6 w-4 h-4 bg-red-600 text-white text-xs rounded-full flex items-center justify-center font-bold leading-none">
                     {{ localCartCount }}
                 </span>
             </button>
-            <button @click="mobileTab = 'pay'"
+            <button v-if="isAdmin" @click="mobileTab = 'pay'"
                 :class="['flex-1 py-2.5 text-xs font-bold border-b-2 transition-colors', mobileTab === 'pay' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500']">
-                PAY
+                {{ $t('PAY') }}
             </button>
         </div>
 
@@ -60,7 +65,7 @@
                             activeCategory === null
                                 ? 'bg-green-600 text-white border-green-600'
                                 : 'text-gray-700 hover:bg-white']">
-                        All Items
+                        {{ $t('All Items') }}
                     </button>
                     <button v-for="cat in categories" :key="cat.id"
                         @click="activeCategory = cat.id; menuSearch = ''"
@@ -68,7 +73,8 @@
                             activeCategory === cat.id
                                 ? 'bg-green-600 text-white border-green-600'
                                 : 'text-gray-700 hover:bg-white']">
-                        {{ cat.name }}
+                        <span class="block">{{ cat.name_en ?? cat.name }}</span>
+                        <span v-if="cat.name_fa" dir="rtl" class="block text-[10px] opacity-80">{{ cat.name_fa }}</span>
                     </button>
                 </div>
             </div>
@@ -80,7 +86,7 @@
                 <div class="px-2.5 py-2 border-b bg-white shrink-0">
                     <div class="flex items-center gap-2 bg-gray-100 rounded px-2.5 py-1.5">
                         <Search class="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                        <input v-model="menuSearch" placeholder="Search item..."
+                        <input v-model="menuSearch" :placeholder="$t('Search item...')"
                             class="bg-transparent text-xs outline-none flex-1 placeholder-gray-400" />
                         <button v-if="menuSearch" @click="menuSearch = ''" class="text-gray-400">
                             <X class="w-3.5 h-3.5" />
@@ -94,7 +100,7 @@
                         <div class="animate-spin w-6 h-6 border-4 border-red-500 border-t-transparent rounded-full"></div>
                     </div>
                     <div v-else-if="!filteredProducts.length" class="text-center text-gray-400 py-10 text-xs">
-                        No items found
+                        {{ $t('No items found') }}
                     </div>
                     <div v-else class="grid gap-1.5" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr))">
                         <button v-for="prod in filteredProducts" :key="prod.id"
@@ -116,7 +122,10 @@
                                 </span>
                             </div>
 
-                            <p class="font-medium text-gray-800 leading-tight line-clamp-2 mb-1" style="font-size:11px">{{ prod.name }}</p>
+                            <img :src="prod.image_url || '/images/default-food.svg'" :alt="prod.name_en ?? prod.name"
+                                class="w-full aspect-square object-cover rounded mb-1.5" />
+                            <p class="font-medium text-gray-800 leading-tight line-clamp-2" style="font-size:11px">{{ prod.name_en ?? prod.name }}</p>
+                            <p v-if="prod.name_fa" dir="rtl" class="text-gray-500 leading-tight line-clamp-1 mb-1" style="font-size:10px">{{ prod.name_fa }}</p>
                             <p class="font-bold text-red-600" style="font-size:11px">AFS {{ prod.price }}</p>
 
                             <!-- +/- controls -->
@@ -141,15 +150,15 @@
                 <!-- Delivery/Takeaway customer info (non-table mode) -->
                 <div v-if="!isTableMode" class="border-b px-3 py-2 bg-blue-50 shrink-0">
                     <p class="text-xs font-semibold text-blue-700 mb-2">
-                        {{ orderType === 'delivery' ? 'Delivery Info' : 'Customer Info' }}
+                        {{ $t(orderType === 'delivery' ? 'Delivery Info' : 'Customer Info') }}
                     </p>
                     <div class="space-y-1.5">
-                        <input v-model="customerName" placeholder="Customer name *"
+                        <input v-model="customerName" :placeholder="$t('Customer name *')"
                             class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs outline-none focus:border-red-400" />
-                        <input v-model="customerPhone" placeholder="Phone number" type="tel"
+                        <input v-model="customerPhone" :placeholder="$t('Phone number')" type="tel"
                             class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs outline-none focus:border-red-400" />
                         <textarea v-if="orderType === 'delivery'" v-model="deliveryAddress"
-                            placeholder="Delivery address"
+                            :placeholder="$t('Delivery address')"
                             rows="2"
                             class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs outline-none focus:border-red-400 resize-none"></textarea>
                     </div>
@@ -160,16 +169,16 @@
                     <button @click="cartTab = 'items'"
                         :class="['flex-1 py-1.5 text-xs font-bold border-b-2 transition-colors',
                             cartTab === 'items' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700']">
-                        ITEMS
+                        {{ $t('ITEMS') }}
                     </button>
                     <button @click="cartTab = 'check'"
                         :class="['flex-1 py-1.5 text-xs font-bold border-b-2 transition-colors',
                             cartTab === 'check' ? 'border-red-600 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700']">
-                        CHECK
+                        {{ $t('CHECK') }}
                     </button>
                     <div class="flex items-center px-2 gap-2 text-xs text-gray-400 shrink-0 border-l">
-                        <span>QTY</span>
-                        <span>AMT</span>
+                        <span>{{ $t('QTY') }}</span>
+                        <span>{{ $t('AMT') }}</span>
                     </div>
                 </div>
 
@@ -182,15 +191,15 @@
                     <div v-else-if="!currentOrder?.items?.length && !localCartCount"
                         class="flex flex-col items-center justify-center py-10 text-gray-400 px-4 text-center">
                         <UtensilsCrossed class="w-8 h-8 mb-2 opacity-30" />
-                        <p class="text-xs font-medium">No Item Selected</p>
-                        <p class="text-xs opacity-60 mt-1">Select items from the menu</p>
+                        <p class="text-xs font-medium">{{ $t('No Item Selected') }}</p>
+                        <p class="text-xs opacity-60 mt-1">{{ $t('Select items from the menu') }}</p>
                     </div>
 
                     <template v-else>
                         <!-- Ordered Items -->
                         <template v-if="currentOrder?.items?.length">
                             <div class="px-3 py-1 bg-blue-50 border-b">
-                                <p class="text-xs font-semibold text-blue-600">Ordered Items</p>
+                                <p class="text-xs font-semibold text-blue-600">{{ $t('Ordered Items') }}</p>
                             </div>
                             <div v-for="item in currentOrder.items" :key="item.id"
                                 class="flex items-center gap-2 px-3 py-1.5 border-b border-gray-50 hover:bg-gray-50">
@@ -198,16 +207,19 @@
                                     item.product?.is_veg ? 'border-green-500' : 'border-red-500']">
                                     <span :class="['w-1.5 h-1.5 rounded-full', item.product?.is_veg ? 'bg-green-500' : 'bg-red-500']"></span>
                                 </span>
-                                <p class="flex-1 text-xs text-gray-800 font-medium leading-tight truncate">{{ item.product_name }}</p>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs text-gray-800 font-medium leading-tight truncate">{{ item.product?.name_en ?? item.product_name }}</p>
+                                    <p v-if="item.product?.name_fa" dir="rtl" class="text-[10px] text-gray-500 leading-tight truncate">{{ item.product.name_fa }}</p>
+                                </div>
                                 <span class="text-xs text-gray-500 w-5 text-center shrink-0">{{ item.quantity }}</span>
-                                <span class="text-xs font-semibold text-gray-800 w-10 text-right shrink-0">₹{{ item.item_total }}</span>
+                                <span class="text-xs font-semibold text-gray-800 w-10 text-right shrink-0">AFS {{ item.item_total }}</span>
                             </div>
                         </template>
 
                         <!-- Pending KOT -->
                         <template v-if="localCartCount > 0">
                             <div class="px-3 py-1 bg-orange-50 border-b border-t">
-                                <p class="text-xs font-semibold text-orange-600">Pending KOT</p>
+                                <p class="text-xs font-semibold text-orange-600">{{ $t('Pending KOT') }}</p>
                             </div>
                             <div v-for="(cartItem, prodId) in localCart" :key="prodId"
                                 class="flex items-center gap-2 px-3 py-1.5 border-b border-gray-50 hover:bg-orange-50 group">
@@ -215,7 +227,10 @@
                                     cartItem.product.is_veg ? 'border-green-500' : 'border-red-500']">
                                     <span :class="['w-1.5 h-1.5 rounded-full', cartItem.product.is_veg ? 'bg-green-500' : 'bg-red-500']"></span>
                                 </span>
-                                <p class="flex-1 text-xs text-gray-800 font-medium leading-tight truncate">{{ cartItem.product.name }}</p>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs text-gray-800 font-medium leading-tight truncate">{{ cartItem.product.name_en ?? cartItem.product.name }}</p>
+                                    <p v-if="cartItem.product.name_fa" dir="rtl" class="text-[10px] text-gray-500 leading-tight truncate">{{ cartItem.product.name_fa }}</p>
+                                </div>
                                 <div class="flex items-center gap-0.5 shrink-0">
                                     <button @click="removeFromLocalCart(cartItem.product)"
                                         class="w-4 h-4 bg-red-100 text-red-600 rounded-full text-xs font-bold flex items-center justify-center hover:bg-red-200">−</button>
@@ -224,7 +239,7 @@
                                         class="w-4 h-4 bg-red-100 text-red-600 rounded-full text-xs font-bold flex items-center justify-center hover:bg-red-200">+</button>
                                 </div>
                                 <span class="text-xs font-semibold text-orange-700 w-10 text-right shrink-0">
-                                    ₹{{ (cartItem.product.price * cartItem.qty).toFixed(0) }}
+                                    AFS {{ (cartItem.product.price * cartItem.qty).toFixed(0) }}
                                 </span>
                             </div>
                         </template>
@@ -234,67 +249,57 @@
                 <!-- Bill Summary -->
                 <div class="border-t px-3 py-2 bg-gray-50 shrink-0 space-y-1 text-xs">
                     <div class="flex justify-between text-gray-600">
-                        <span>Subtotal</span><span>AFS {{ billSubtotal }}</span>
+                        <span>{{ $t('Subtotal') }}</span><span>AFS {{ billSubtotal }}</span>
                     </div>
                     <div class="flex justify-between text-gray-600">
-                        <span>Tax (GST)</span><span>AFS {{ billTax }}</span>
+                        <span>{{ $t('Tax (GST)') }}</span><span>AFS {{ billTax }}</span>
                     </div>
                     <div v-if="currentOrder && parseFloat(currentOrder.discount_amount ?? 0) > 0"
                         class="flex justify-between text-green-600 font-medium">
-                        <span>Discount</span><span>-AFS {{ currentOrder.discount_amount }}</span>
+                        <span>{{ $t('Discount') }}</span><span>-AFS {{ currentOrder.discount_amount }}</span>
                     </div>
                     <div class="flex justify-between font-bold text-sm text-gray-900 pt-1 border-t border-gray-200">
-                        <span>Total</span>
+                        <span>{{ $t('Total') }}</span>
                         <span class="text-red-600">AFS {{ billTotal }}</span>
                     </div>
                     <label class="flex items-center gap-2 text-gray-500 cursor-pointer pt-0.5">
                         <input type="checkbox" v-model="complimentary" class="rounded accent-red-600" />
-                        <span>Complimentary</span>
+                        <span>{{ $t('Complimentary') }}</span>
                     </label>
                 </div>
 
                 <!-- Payment method -->
-                <div class="border-t px-3 py-2 shrink-0">
+                <div v-if="isAdmin" class="border-t px-3 py-2 shrink-0">
                     <div class="flex gap-1 flex-wrap">
                         <button v-for="m in paymentMethods" :key="m.key"
                             @click="payMethod = m.key"
                             :class="['px-2 py-1 rounded text-xs font-semibold border transition-colors',
                                 payMethod === m.key ? 'bg-red-600 text-white border-red-600' : 'border-gray-300 text-gray-600 hover:border-gray-400 hover:bg-gray-50']">
-                            {{ m.label }}
+                            {{ $t(m.label) }}
                         </button>
                     </div>
                     <div v-if="payMethod === 'cash' && (currentOrder || localCartCount)" class="mt-1.5 flex items-center gap-2">
-                        <span class="text-xs text-gray-500 shrink-0">Tendered AFS</span>
+                        <span class="text-xs text-gray-500 shrink-0">{{ $t('Tendered AFS') }}</span>
                         <input v-model="cashTendered" type="number" :placeholder="billTotal"
                             class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs outline-none focus:border-red-400" />
                         <span v-if="cashTendered && parseFloat(cashTendered) >= parseFloat(billTotal)"
                             class="text-xs text-green-600 font-bold shrink-0">
-                            ↩ ₹{{ (parseFloat(cashTendered) - parseFloat(billTotal)).toFixed(2) }}
+                            ↩ AFS {{ (parseFloat(cashTendered) - parseFloat(billTotal)).toFixed(2) }}
                         </span>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="border-t px-3 py-2 grid grid-cols-2 gap-1.5 shrink-0 bg-white">
-                    <button @click="sendKOT"
-                        :disabled="!localCartCount || placing"
-                        class="py-2 bg-gray-700 text-white rounded text-xs font-bold hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        KOT
-                    </button>
-                    <button @click="sendKOT"
-                        :disabled="!localCartCount || placing"
-                        class="py-2 bg-gray-500 text-white rounded text-xs font-bold hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        KOT & PRINT
-                    </button>
+                <div :class="['border-t px-3 py-2 grid gap-1.5 shrink-0 bg-white', isAdmin ? 'grid-cols-2' : 'grid-cols-1']">
                     <button @click="sendKOT"
                         :disabled="!localCartCount || placing"
                         class="py-2 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        {{ placing ? 'Saving...' : 'SAVE' }}
+                        {{ placing ? $t('Saving...') : $t('SAVE') }}
                     </button>
-                    <button @click="saveAndPay"
+                    <button v-if="isAdmin" @click="saveAndPay"
                         :disabled="(!currentOrder && !localCartCount) || paying"
                         class="py-2 bg-red-600 text-white rounded text-xs font-bold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-                        {{ paying ? 'Processing...' : 'SAVE & PAY' }}
+                        {{ paying ? $t('Processing...') : $t('SAVE & PAY') }}
                     </button>
                 </div>
             </div>
@@ -310,20 +315,20 @@
                         <AlertCircle class="w-5 h-5 text-orange-500" />
                     </div>
                     <div>
-                        <h3 class="font-bold text-gray-800 text-sm">Item Already in Order</h3>
+                        <h3 class="font-bold text-gray-800 text-sm">{{ $t('Item Already in Order') }}</h3>
                         <p class="text-xs text-gray-600 mt-1">
-                            <b>{{ confirmItem.name }}</b> is already in the running order. Add more quantity?
+                            <b>{{ [confirmItem.name_en ?? confirmItem.name, confirmItem.name_fa].filter(Boolean).join(' / ') }}</b> {{ $t('is already in the running order. Add more quantity?') }}
                         </p>
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <button @click="confirmItem = null"
                         class="flex-1 py-2 border border-gray-300 rounded text-gray-600 text-xs hover:bg-gray-50">
-                        Cancel
+                        {{ $t('Cancel') }}
                     </button>
                     <button @click="confirmAndAdd"
                         class="flex-1 py-2 bg-red-600 text-white rounded text-xs font-bold hover:bg-red-700">
-                        Yes, Add More
+                        {{ $t('Yes, Add More') }}
                     </button>
                 </div>
             </div>
@@ -337,9 +342,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { ArrowLeft, Search, X, UtensilsCrossed, AlertCircle } from 'lucide-vue-next'
 import api from '@/api/index.js'
+import { useAuthStore } from '@/stores/auth.js'
+import { t, useLocalization } from '@/localization.js'
 
 const route  = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
+const { locale, setLocale } = useLocalization()
+const isAdmin = computed(() => auth.user?.role?.slug === 'admin')
 
 // ── Mode detection ────────────────────────────────────────────────
 const tableId    = route.params.tableId ? parseInt(route.params.tableId) : null
@@ -388,7 +398,7 @@ const paymentMethods = [
 
 const orderTypeLabel = computed(() => {
     const map = { delivery: 'Delivery Order', takeaway: 'Take Away', dine_in: 'New Order' }
-    return map[orderType.value] ?? 'New Order'
+    return t(map[orderType.value] ?? 'New Order')
 })
 
 // ── Computed ──────────────────────────────────────────────────────
@@ -397,7 +407,10 @@ const filteredProducts = computed(() => {
     if (activeCategory.value) prods = prods.filter(p => p.category_id === activeCategory.value)
     if (menuSearch.value) {
         const q = menuSearch.value.toLowerCase()
-        prods = prods.filter(p => p.name.toLowerCase().includes(q))
+        prods = prods.filter(p =>
+            (p.name_en ?? p.name).toLowerCase().includes(q)
+            || (p.name_fa ?? '').toLowerCase().includes(q)
+        )
     }
     return prods
 })
@@ -447,7 +460,7 @@ onMounted(async () => {
             orderLoading.value = false
         }
     } catch (err) {
-        toast.error('Failed to load data')
+        toast.error(t('Failed to load data'))
         if (isTableMode) router.push({ name: 'tables' })
     } finally {
         loading.value = false
@@ -493,7 +506,7 @@ async function sendKOT() {
 
     // Delivery/takeaway: customer name required
     if (!isTableMode && !customerName.value.trim()) {
-        return toast.warning('Please enter customer name first')
+        return toast.warning(t('Please enter customer name first'))
     }
 
     placing.value = true
@@ -522,20 +535,24 @@ async function sendKOT() {
         }
 
         clearLocalCart()
-        toast.success('KOT sent to kitchen')
+        toast.success(t('KOT sent to kitchen'))
         mobileTab.value = 'cart'
     } catch (err) {
-        toast.error(err?.response?.data?.message ?? 'Failed to send KOT')
+        toast.error(err?.response?.data?.message ?? t('Failed to send KOT'))
     } finally {
         placing.value = false
     }
 }
 
 async function saveAndPay() {
+    if (!isAdmin.value) {
+        toast.error(t('Only admins can save and pay.'))
+        return
+    }
     if (paying.value) return
 
     if (!isTableMode && !customerName.value.trim()) {
-        return toast.warning('Please enter customer name first')
+        return toast.warning(t('Please enter customer name first'))
     }
 
     if (localCartCount.value) {
@@ -544,7 +561,7 @@ async function saveAndPay() {
     }
 
     if (!currentOrder.value) {
-        return toast.warning('No order to pay. Add items first.')
+        return toast.warning(t('No order to pay. Add items first.'))
     }
 
     paying.value = true
@@ -558,10 +575,10 @@ async function saveAndPay() {
                     : undefined,
             }],
         })
-        toast.success('Payment done!')
+        toast.success(t('Payment done!'))
         router.push({ name: 'tables' })
     } catch (err) {
-        toast.error(err?.response?.data?.message ?? 'Payment failed')
+        toast.error(err?.response?.data?.message ?? t('Payment failed'))
     } finally {
         paying.value = false
     }

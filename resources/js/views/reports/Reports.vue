@@ -1,27 +1,27 @@
 <template>
     <div class="p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Sales Reports</h1>
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">{{ $t('Sales Reports') }}</h1>
 
         <!-- Filters -->
         <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex items-center gap-4 flex-wrap">
             <div>
-                <label class="text-xs text-gray-500 block mb-1">From</label>
+                <label class="text-xs text-gray-500 block mb-1">{{ $t('From') }}</label>
                 <input v-model="filters.from" type="date" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" />
             </div>
             <div>
-                <label class="text-xs text-gray-500 block mb-1">To</label>
+                <label class="text-xs text-gray-500 block mb-1">{{ $t('To') }}</label>
                 <input v-model="filters.to" type="date" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" />
             </div>
             <div>
-                <label class="text-xs text-gray-500 block mb-1">Group By</label>
+                <label class="text-xs text-gray-500 block mb-1">{{ $t('Group By') }}</label>
                 <select v-model="filters.group_by" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <option value="day">Daily</option>
-                    <option value="week">Weekly</option>
-                    <option value="month">Monthly</option>
+                    <option value="day">{{ $t('Daily') }}</option>
+                    <option value="week">{{ $t('Weekly') }}</option>
+                    <option value="month">{{ $t('Monthly') }}</option>
                 </select>
             </div>
             <button @click="loadReport" class="mt-4 bg-orange-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-orange-600">
-                Generate Report
+                {{ $t('Generate Report') }}
             </button>
         </div>
 
@@ -32,26 +32,26 @@
         <template v-else-if="report">
             <!-- Summary cards -->
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <StatCard title="Total Sales" :value="'AFS ' + fmt(report.summary.total_sales)" :icon="TrendingUp" color="orange" />
-                <StatCard title="Total Orders" :value="report.summary.total_orders" :icon="ShoppingBag" color="blue" />
-                <StatCard title="Avg Order Value" :value="'AFS ' + fmt(report.summary.avg_order_value)" :icon="Target" color="purple" />
-                <StatCard title="Total Tax" :value="'AFS ' + fmt(report.summary.total_tax)" :icon="Receipt" color="green" />
+                <StatCard :title="$t('Total Sales')" :value="'AFS ' + fmt(report.summary.total_sales)" :icon="TrendingUp" color="orange" />
+                <StatCard :title="$t('Total Orders')" :value="report.summary.total_orders" :icon="ShoppingBag" color="blue" />
+                <StatCard :title="$t('Avg Order Value')" :value="'AFS ' + fmt(report.summary.avg_order_value)" :icon="Target" color="purple" />
+                <StatCard :title="$t('Total Tax')" :value="'AFS ' + fmt(report.summary.total_tax)" :icon="Receipt" color="green" />
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Sales table -->
                 <div class="lg:col-span-2 bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="p-4 border-b">
-                        <h2 class="font-bold text-gray-800">Sales Breakdown</h2>
+                        <h2 class="font-bold text-gray-800">{{ $t('Sales Breakdown') }}</h2>
                     </div>
                     <table class="w-full">
                         <thead class="bg-gray-50 border-b">
                             <tr>
-                                <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Period</th>
-                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Orders</th>
-                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Sales</th>
-                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Discount</th>
-                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Tax</th>
+                                <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Period') }}</th>
+                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Orders') }}</th>
+                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Sales') }}</th>
+                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Discount') }}</th>
+                                <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Tax') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
@@ -70,14 +70,14 @@
                 <div class="space-y-6">
                     <!-- Payment Breakdown -->
                     <div class="bg-white rounded-xl shadow-sm p-5">
-                        <h2 class="font-bold text-gray-800 mb-4">Payment Methods</h2>
+                        <h2 class="font-bold text-gray-800 mb-4">{{ $t('Payment Methods') }}</h2>
                         <div class="space-y-3">
                             <div v-for="p in report.payment_breakdown" :key="p.payment_method"
                                 class="flex items-center justify-between">
-                                <span class="text-sm capitalize text-gray-700">{{ p.payment_method.replace('_', ' ') }}</span>
+                                <span class="text-sm capitalize text-gray-700">{{ $t(p.payment_method) }}</span>
                                 <div class="text-right">
-                                    <p class="text-sm font-semibold text-gray-900">₹{{ fmt(p.total) }}</p>
-                                    <p class="text-xs text-gray-400">{{ p.count }} txns</p>
+                                    <p class="text-sm font-semibold text-gray-900">AFS {{ fmt(p.total) }}</p>
+                                    <p class="text-xs text-gray-400">{{ p.count }} {{ $t('txns') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -85,13 +85,14 @@
 
                     <!-- Top Products -->
                     <div class="bg-white rounded-xl shadow-sm p-5">
-                        <h2 class="font-bold text-gray-800 mb-4">Top Products</h2>
+                        <h2 class="font-bold text-gray-800 mb-4">{{ $t('Top Products') }}</h2>
                         <div class="space-y-3">
                             <div v-for="(p, i) in report.top_products" :key="p.id" class="flex items-center gap-3">
                                 <span class="w-6 text-center text-xs font-bold text-gray-400">{{ i + 1 }}</span>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-900 truncate">{{ p.name }}</p>
-                                    <p class="text-xs text-gray-500">{{ p.total_qty }} sold</p>
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ p.name_en ?? p.name }}</p>
+                                    <p v-if="p.name_fa" dir="rtl" class="text-xs text-gray-500 truncate">{{ p.name_fa }}</p>
+                                    <p class="text-xs text-gray-500">{{ $t('{count} sold', { count: p.total_qty }) }}</p>
                                 </div>
                                 <span class="text-sm font-semibold text-gray-900">AFS {{ fmt(p.total_revenue) }}</span>
                             </div>

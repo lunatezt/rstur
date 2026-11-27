@@ -17,13 +17,13 @@
                 <template v-for="item in navItems" :key="item.name">
                     <router-link
                         :to="item.path"
-                        v-if="!item.permission || auth.hasPermission(item.permission)"
+                        v-if="isNavItemVisible(item)"
                         class="flex items-center gap-2.5 px-2.5 py-2 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
                         active-class="bg-red-600 text-white"
-                        :title="!sidebarOpen ? item.label : undefined"
+                        :title="!sidebarOpen ? $t(item.label) : undefined"
                     >
                         <component :is="item.icon" class="w-4 h-4 flex-shrink-0" />
-                        <span v-if="sidebarOpen" class="text-xs font-medium truncate">{{ item.label }}</span>
+                        <span v-if="sidebarOpen" class="text-xs font-medium truncate">{{ $t(item.label) }}</span>
                     </router-link>
                 </template>
             </nav>
@@ -41,8 +41,8 @@
                     </div>
                 </div>
                 <button v-if="sidebarOpen" @click="handleLogout"
-                    class="mt-1.5 w-full text-left text-xs text-gray-400 hover:text-white flex items-center gap-1.5">
-                    <LogOut class="w-3 h-3" /> Logout
+                class="mt-1.5 w-full text-left text-xs text-gray-400 hover:text-white flex items-center gap-1.5">
+                <LogOut class="w-3 h-3" /> {{ $t('Logout') }}
                 </button>
             </div>
         </aside>
@@ -55,10 +55,15 @@
                     <Menu class="w-4 h-4" />
                 </button>
                 <div class="flex-1 min-w-0">
-                    <h1 class="text-sm font-semibold text-gray-800 truncate">{{ pageTitle }}</h1>
+                    <h1 class="text-sm font-semibold text-gray-800 truncate">{{ $t(pageTitle) }}</h1>
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                     <span class="text-xs text-gray-500 hidden sm:block truncate max-w-32">{{ auth.restaurant?.name }}</span>
+                    <select :value="locale" @change="setLocale($event.target.value)" :aria-label="$t('Language')"
+                        class="border border-gray-200 rounded px-2 py-1 text-xs bg-white text-gray-700">
+                        <option value="en">English</option>
+                        <option value="prs">دری</option>
+                    </select>
                     <div class="w-6 h-6 rounded-full flex items-center justify-center"
                         :style="{ background: primaryColor }">
                         <span class="text-white font-bold text-xs">{{ userInitial }}</span>
@@ -83,11 +88,13 @@ import {
     Table2, LayoutGrid, Users, Package, BarChart3, Settings, ChefHat, Menu, LogOut
 } from 'lucide-vue-next'
 import api from '@/api/index.js'
+import { useLocalization } from '@/localization.js'
 
 const auth = useAuthStore()
+const { locale, setLocale, t } = useLocalization()
 const route = useRoute()
 const router = useRouter()
-const sidebarOpen = ref(true)
+const sidebarOpen = ref(window.innerWidth >= 768)
 
 const restaurantSettings = ref({})
 const primaryColor    = computed(() => restaurantSettings.value?.primary_color ?? '#ef4444')
@@ -102,11 +109,21 @@ const navItems = [
     { name: 'orders',       label: 'Orders',         path: '/orders',      icon: ClipboardList,   permission: 'orders.view' },
     { name: 'menu',         label: 'Menu',           path: '/menu',        icon: UtensilsCrossed, permission: 'menu.view' },
     { name: 'customers',    label: 'Customers',      path: '/customers',   icon: Users,           permission: 'customers.view' },
+    { name: 'staff',        label: 'Staff',         path: '/staff',       icon: Users,           permission: 'staff.manage' },
     { name: 'inventory',    label: 'Inventory',      path: '/inventory',   icon: Package,         permission: 'inventory.view' },
     { name: 'kds',          label: 'Kitchen',        path: '/kds',         icon: ChefHat,         permission: 'kitchen.view' },
     { name: 'reports',      label: 'Reports',        path: '/reports',     icon: BarChart3,       permission: 'reports.view' },
     { name: 'settings',     label: 'Settings',       path: '/settings',    icon: Settings,        permission: 'settings.view' },
 ]
+
+function isNavItemVisible(item) {
+    const role = auth.user?.role?.slug
+
+    if (role === 'cashier') return ['tables', 'orders'].includes(item.name)
+    if (role === 'kitchen_staff') return item.name === 'kds'
+
+    return !item.permission || auth.hasPermission(item.permission)
+}
 
 const pageTitles = {
     dashboard:    'Dashboard',
@@ -116,6 +133,7 @@ const pageTitles = {
     tables:       'Table View',
     'table-setup': 'Table Management',
     customers:    'Customers',
+    staff:        'Staff Management',
     inventory:    'Inventory',
     kds:          'Kitchen Display',
     reports:      'Reports',
@@ -123,7 +141,7 @@ const pageTitles = {
 }
 
 const pageTitle = computed(() => pageTitles[route.name] ?? 'Restaurant POS')
-watch(pageTitle, title => { document.title = title + ' | Restaurant POS' }, { immediate: true })
+watch([pageTitle, locale], ([title]) => { document.title = `${t(title)} | ${t('Restaurant POS')}` }, { immediate: true })
 
 async function handleLogout() {
     await auth.logout()

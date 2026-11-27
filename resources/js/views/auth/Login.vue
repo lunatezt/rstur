@@ -1,61 +1,25 @@
 <template>
-    <div class="min-h-screen bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center p-4">
+    <div class="min-h-screen bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center p-4 relative">
+        <select :value="locale" @change="setLocale($event.target.value)" :aria-label="$t('Language')"
+            class="absolute top-4 right-4 border border-white/40 rounded-lg px-3 py-2 text-sm bg-white/95 text-gray-700">
+            <option value="en">English</option>
+            <option value="prs">دری</option>
+        </select>
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
             <!-- Logo -->
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <UtensilsCrossed class="w-8 h-8 text-white" />
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900">Restaurant POS</h1>
-                <p class="text-gray-500 text-sm mt-1">Restaurant Point of Sale System</p>
+                <h1 class="text-2xl font-bold text-gray-900">{{ $t('Restaurant POS') }}</h1>
+                <p class="text-gray-500 text-sm mt-1">{{ $t('Restaurant Point of Sale System') }}</p>
             </div>
 
-            <!-- Tabs -->
-            <div class="flex bg-gray-100 rounded-lg p-1 mb-6">
-                <button
-                    @click="loginMode = 'email'"
-                    :class="['flex-1 py-2 rounded-md text-sm font-medium transition-colors', loginMode === 'email' ? 'bg-white shadow text-orange-600' : 'text-gray-500']"
-                >Email Login</button>
-                <button
-                    @click="loginMode = 'pin'"
-                    :class="['flex-1 py-2 rounded-md text-sm font-medium transition-colors', loginMode === 'pin' ? 'bg-white shadow text-orange-600' : 'text-gray-500']"
-                >PIN Login</button>
-            </div>
-
-            <!-- Email Login -->
-            <form v-if="loginMode === 'email'" @submit.prevent="handleEmailLogin" class="space-y-4">
+            <form @submit.prevent="handlePinLogin" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input v-model="emailForm.email" type="email" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                        placeholder="staff@restaurant.com" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input v-model="emailForm.password" type="password" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                        placeholder="••••••••" />
-                </div>
-                <div v-if="error" class="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg">{{ error }}</div>
-                <button type="submit" :disabled="auth.loading"
-                    class="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-60">
-                    {{ auth.loading ? 'Signing in...' : 'Sign In' }}
-                </button>
-            </form>
-
-            <!-- PIN Login -->
-            <form v-else @submit.prevent="handlePinLogin" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Restaurant ID</label>
-                    <input v-model="pinForm.restaurantId" type="number" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
-                        placeholder="1" />
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">PIN</label>
-                    <div class="flex gap-2 justify-center">
+                    <div dir="ltr" class="flex gap-2 justify-center">
                         <input v-for="i in 4" :key="i" v-model="pinDigits[i-1]"
-                            type="text" maxlength="1"
+                            type="text" maxlength="1" dir="ltr"
                             class="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:border-orange-500 outline-none"
                             @input="onPinInput(i-1, $event)"
                             @keydown.backspace="onPinBackspace(i-1)"
@@ -65,7 +29,7 @@
                 <div v-if="error" class="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg">{{ error }}</div>
                 <button type="submit" :disabled="auth.loading"
                     class="w-full bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-60">
-                    {{ auth.loading ? 'Verifying...' : 'Sign In with PIN' }}
+                    {{ auth.loading ? $t('Verifying...') : $t('Sign In with PIN') }}
                 </button>
             </form>
         </div>
@@ -73,38 +37,27 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import { UtensilsCrossed } from 'lucide-vue-next'
+import { useLocalization } from '@/localization.js'
 
-onMounted(() => { document.title = 'Restaurant POS' })
+const { locale, setLocale, t } = useLocalization()
+watch(locale, () => { document.title = t('Restaurant POS') }, { immediate: true })
 
 const auth = useAuthStore()
 const router = useRouter()
-const loginMode = ref('email')
 const error = ref('')
 
-const emailForm = reactive({ email: '', password: '' })
-const pinForm = reactive({ restaurantId: '' })
 const pinDigits = ref(['', '', '', ''])
 const pinRefs = ref([])
-
-async function handleEmailLogin() {
-    error.value = ''
-    const result = await auth.login(emailForm.email, emailForm.password)
-    if (result.success) {
-        router.push('/')
-    } else {
-        error.value = result.message
-    }
-}
 
 async function handlePinLogin() {
     error.value = ''
     const pin = pinDigits.value.join('')
-    if (pin.length < 4) { error.value = 'Please enter full PIN'; return }
-    const result = await auth.pinLogin(pinForm.restaurantId, pin)
+    if (pin.length < 4) { error.value = t('Please enter full PIN'); return }
+    const result = await auth.pinLogin(1, pin)
     if (result.success) {
         router.push('/')
     } else {
