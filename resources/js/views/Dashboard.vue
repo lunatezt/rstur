@@ -2,16 +2,16 @@
     <div class="p-6 space-y-6">
         <!-- Stats grid -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard title="Today's Sales" :value="'AFS ' + fmt(stats.today_sales)" :sub="salesGrowthText" :icon="TrendingUp" color="orange" />
-            <StatCard title="Today's Orders" :value="stats.today_orders" :sub="'Yesterday: ' + stats.yesterday_orders" :icon="ShoppingBag" color="blue" />
-            <StatCard title="Active Orders" :value="stats.active_orders" sub="In progress" :icon="Clock" color="yellow" />
-            <StatCard title="Tables" :value="stats.available_tables + '/' + stats.total_tables" sub="Available" :icon="LayoutGrid" color="green" />
+            <StatCard :title="$t(`Today's Sales`)" :value="'AFS ' + fmt(stats.today_sales)" :sub="salesGrowthText" :icon="TrendingUp" color="orange" />
+            <StatCard :title="$t(`Today's Orders`)" :value="stats.today_orders" :sub="$t('Yesterday: {count}', { count: stats.yesterday_orders })" :icon="ShoppingBag" color="blue" />
+            <StatCard :title="$t('Active Orders')" :value="stats.active_orders" :sub="$t('In progress')" :icon="Clock" color="yellow" />
+            <StatCard :title="$t('Tables')" :value="stats.available_tables + '/' + stats.total_tables" :sub="$t('Available')" :icon="LayoutGrid" color="green" />
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Hourly Sales Chart -->
             <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Today's Sales by Hour</h2>
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">{{ $t(`Today's Sales by Hour`) }}</h2>
                 <div class="flex items-end gap-1 h-40">
                     <template v-for="h in 24" :key="h">
                         <div class="flex-1 flex flex-col items-center gap-1">
@@ -29,7 +29,7 @@
 
             <!-- Payment Breakdown -->
             <div class="bg-white rounded-xl shadow-sm p-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Payment Methods</h2>
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">{{ $t('Payment Methods') }}</h2>
                 <div class="space-y-3">
                     <div v-for="p in paymentBreakdown" :key="p.payment_method" class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
@@ -38,7 +38,7 @@
                         </div>
                         <span class="text-sm font-semibold text-gray-900">AFS {{ fmt(p.total) }}</span>
                     </div>
-                    <div v-if="!paymentBreakdown.length" class="text-center text-gray-400 text-sm py-4">No payments today</div>
+                    <div v-if="!paymentBreakdown.length" class="text-center text-gray-400 text-sm py-4">{{ $t('No payments today') }}</div>
                 </div>
             </div>
         </div>
@@ -46,7 +46,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Top Products -->
             <div class="bg-white rounded-xl shadow-sm p-6">
-                <h2 class="text-lg font-semibold mb-4 text-gray-800">Top Selling Today</h2>
+                <h2 class="text-lg font-semibold mb-4 text-gray-800">{{ $t('Top Selling Today') }}</h2>
                 <div class="space-y-3">
                     <div v-for="(product, i) in topProducts" :key="product.id" class="flex items-center gap-3">
                         <span class="w-6 text-center text-sm font-bold text-gray-400">{{ i + 1 }}</span>
@@ -55,34 +55,35 @@
                             <UtensilsCrossed v-else class="w-5 h-5 text-orange-400 m-2.5" />
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-900 truncate">{{ product.name }}</p>
-                            <p class="text-xs text-gray-500">{{ product.total_qty }} sold</p>
+                            <p class="text-sm font-medium text-gray-900 truncate">{{ product.name_en ?? product.name }}</p>
+                            <p v-if="product.name_fa" dir="rtl" class="text-xs text-gray-500 truncate">{{ product.name_fa }}</p>
+                            <p class="text-xs text-gray-500">{{ $t('{count} sold', { count: product.total_qty }) }}</p>
                         </div>
                         <span class="text-sm font-semibold text-gray-900">AFS {{ fmt(product.total_revenue) }}</span>
                     </div>
-                    <div v-if="!topProducts.length" class="text-center text-gray-400 text-sm py-4">No sales yet today</div>
+                    <div v-if="!topProducts.length" class="text-center text-gray-400 text-sm py-4">{{ $t('No sales yet today') }}</div>
                 </div>
             </div>
 
             <!-- Recent Orders -->
             <div class="bg-white rounded-xl shadow-sm p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-lg font-semibold text-gray-800">Recent Orders</h2>
-                    <router-link to="/orders" class="text-sm text-orange-500 hover:underline">View all</router-link>
+                    <h2 class="text-lg font-semibold text-gray-800">{{ $t('Recent Orders') }}</h2>
+                    <router-link to="/orders" class="text-sm text-orange-500 hover:underline">{{ $t('View all') }}</router-link>
                 </div>
                 <div class="space-y-2">
                     <div v-for="order in recentOrders" :key="order.id"
                         class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
                         <div>
                             <p class="text-sm font-medium text-gray-900">{{ order.order_number }}</p>
-                            <p class="text-xs text-gray-500">{{ order.table?.name ?? order.order_type }}</p>
+                            <p class="text-xs text-gray-500">{{ order.table?.name ?? $t(order.order_type) }}</p>
                         </div>
                         <div class="text-right">
                             <StatusBadge :status="order.status" />
                             <p class="text-sm font-semibold mt-1">AFS {{ fmt(order.grand_total) }}</p>
                         </div>
                     </div>
-                    <div v-if="!recentOrders.length" class="text-center text-gray-400 text-sm py-4">No orders yet</div>
+                    <div v-if="!recentOrders.length" class="text-center text-gray-400 text-sm py-4">{{ $t('No orders yet') }}</div>
                 </div>
             </div>
         </div>
@@ -95,6 +96,7 @@ import { TrendingUp, ShoppingBag, Clock, LayoutGrid, UtensilsCrossed } from 'luc
 import api from '@/api/index.js'
 import StatCard from '@/components/StatCard.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+import { t } from '@/localization.js'
 
 const stats = ref({})
 const topProducts = ref([])
@@ -105,7 +107,7 @@ const paymentBreakdown = ref([])
 const salesGrowthText = computed(() => {
     const g = stats.value.sales_growth
     if (g === undefined) return ''
-    return g >= 0 ? `+${g}% from yesterday` : `${g}% from yesterday`
+    return t('{percent}% from yesterday', { percent: g >= 0 ? `+${g}` : g })
 })
 
 function fmt(v) {

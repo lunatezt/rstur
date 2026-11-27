@@ -20,3 +20,13 @@ replace the currency with AFS everywhere possible
 
 
 set the  side menu in the colpase form as default for smaller screens 
+
+
+
+
+notification system between kitchen and admin if the whole order is ready or any individual item is ready the cashier account should recive a notifcation
+not a native notifcation, the indoor notification when a user is inside the app can see the notification not a native notification 
+a pop up and a section to see notifications and mark them as ready
+the notfication should hold basic information about the order table number and etc...
+
+in the report section 

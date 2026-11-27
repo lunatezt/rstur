@@ -8,13 +8,13 @@
                     <button v-for="type in orderTypes" :key="type.value"
                         @click="cart.orderType = type.value"
                         :class="['px-3 py-1.5 rounded-lg text-sm font-medium transition-colors', cart.orderType === type.value ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">
-                        {{ type.label }}
+                        {{ $t(type.label) }}
                     </button>
                 </div>
                 <div v-if="cart.orderType === 'dine_in'" class="flex items-center gap-2">
                     <select v-model="cart.selectedTable" class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white"
                         :value="cart.selectedTable">
-                        <option :value="null">Select Table</option>
+                        <option :value="null">{{ $t('Select Table') }}</option>
                         <option v-for="t in availableTables" :key="t.id" :value="t">
                             {{ t.name }} ({{ t.capacity }} seats)
                         </option>
@@ -22,7 +22,7 @@
                 </div>
                 <div class="flex items-center gap-2 ml-auto">
                     <Search class="w-4 h-4 text-gray-400" />
-                    <input v-model="searchQuery" placeholder="Search items..."
+                    <input v-model="searchQuery" :placeholder="$t('Search items...')"
                         class="text-sm border border-gray-300 rounded-lg px-3 py-1.5 w-48 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none" />
                 </div>
             </div>
@@ -32,12 +32,13 @@
                 <div class="flex gap-1 px-4 py-2 overflow-x-auto">
                     <button @click="selectedCategoryId = null"
                         :class="['px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors', !selectedCategoryId ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-100']">
-                        All
+                        {{ $t('All') }}
                     </button>
                     <button v-for="cat in categories" :key="cat.id"
                         @click="selectedCategoryId = cat.id"
                         :class="['px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors', selectedCategoryId === cat.id ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-100']">
-                        {{ cat.name }}
+                        <span class="block">{{ cat.name_en ?? cat.name }}</span>
+                        <span v-if="cat.name_fa" dir="rtl" class="block text-xs opacity-80">{{ cat.name_fa }}</span>
                     </button>
                 </div>
             </div>
@@ -58,7 +59,7 @@
                                 <div :class="['w-3 h-3 rounded-full border border-white', product.is_veg ? 'bg-green-500' : 'bg-red-500']"></div>
                             </div>
                             <div v-if="!product.is_available" class="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg">
-                                <span class="text-white text-xs font-bold">UNAVAILABLE</span>
+                                <span class="text-white text-xs font-bold">{{ $t('UNAVAILABLE') }}</span>
                             </div>
                         </div>
                         <h3 class="text-xs font-semibold text-gray-800 leading-tight truncate">{{ product.name_en ?? product.name }}</h3>
@@ -71,7 +72,7 @@
                 </div>
                 <div v-if="!loading && !filteredProducts.length" class="text-center py-20 text-gray-400">
                     <UtensilsCrossed class="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No items found</p>
+                    <p>{{ $t('No items found') }}</p>
                 </div>
             </div>
         </div>
@@ -81,14 +82,14 @@
             <!-- Cart header -->
             <div class="px-4 py-3 border-b bg-gray-50">
                 <div class="flex items-center justify-between">
-                    <h2 class="font-bold text-gray-800">Order</h2>
+                    <h2 class="font-bold text-gray-800">{{ $t('Order') }}</h2>
                     <button @click="cart.clearCart()" class="text-red-500 text-sm hover:underline flex items-center gap-1">
-                        <Trash2 class="w-4 h-4" /> Clear
+                        <Trash2 class="w-4 h-4" /> {{ $t('Clear') }}
                     </button>
                 </div>
                 <!-- Customer search -->
                 <div class="mt-2 relative">
-                    <input v-model="customerSearch" @input="debouncedCustomerSearch" placeholder="Search customer by phone..."
+                    <input v-model="customerSearch" @input="debouncedCustomerSearch" :placeholder="$t('Search customer by phone...')"
                         class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 outline-none" />
                     <div v-if="customerResults.length" class="absolute top-full left-0 right-0 bg-white border rounded-lg shadow-lg z-20 mt-1">
                         <div v-for="c in customerResults" :key="c.id"
@@ -114,8 +115,8 @@
             <div class="flex-1 overflow-y-auto">
                 <div v-if="!cart.items.length" class="flex flex-col items-center justify-center h-48 text-gray-400">
                     <ShoppingCart class="w-12 h-12 mb-3 opacity-40" />
-                    <p class="text-sm">Cart is empty</p>
-                    <p class="text-xs mt-1">Click items to add to order</p>
+                    <p class="text-sm">{{ $t('Cart is empty') }}</p>
+                    <p class="text-xs mt-1">{{ $t('Click items to add to order') }}</p>
                 </div>
                 <div v-else class="divide-y">
                     <div v-for="item in cart.items" :key="item.id" class="px-4 py-3">
@@ -123,6 +124,7 @@
                             <div :class="['w-3 h-3 rounded-full mt-1 flex-shrink-0', item.is_veg ? 'bg-green-500' : 'bg-red-500']"></div>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-800 truncate">{{ item.product_name }}</p>
+                                <p v-if="item.product_name_fa" dir="rtl" class="text-xs text-gray-500 truncate">{{ item.product_name_fa }}</p>
                                 <p v-if="item.variant_name" class="text-xs text-gray-500">{{ item.variant_name }}</p>
                                 <div v-if="item.addons?.length" class="text-xs text-gray-500">
                                     + {{ item.addons.map(a => a.addon_name).join(', ') }}
@@ -151,34 +153,34 @@
             <!-- Totals -->
             <div class="border-t p-4 space-y-2 bg-gray-50">
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Subtotal</span><span>AFS {{ cart.subtotal.toFixed(2) }}</span>
+                    <span>{{ $t('Subtotal') }}</span><span>AFS {{ cart.subtotal.toFixed(2) }}</span>
                 </div>
                 <div class="flex justify-between text-sm text-gray-600">
-                    <span>Tax</span><span>AFS {{ cart.taxTotal.toFixed(2) }}</span>
+                    <span>{{ $t('Tax') }}</span><span>AFS {{ cart.taxTotal.toFixed(2) }}</span>
                 </div>
                 <div v-if="cart.discountAmount > 0" class="flex justify-between text-sm text-green-600">
-                    <span>Discount</span><span>-AFS {{ cart.discountAmount.toFixed(2) }}</span>
+                    <span>{{ $t('Discount') }}</span><span>-AFS {{ cart.discountAmount.toFixed(2) }}</span>
                 </div>
                 <div class="flex justify-between font-bold text-lg border-t pt-2">
-                    <span>Total</span><span class="text-orange-600">AFS {{ cart.grandTotal }}</span>
+                    <span>{{ $t('Total') }}</span><span class="text-orange-600">AFS {{ cart.grandTotal }}</span>
                 </div>
 
                 <!-- Action buttons -->
                 <div class="flex gap-2 pt-1">
                     <button @click="showDiscountModal = true"
                         class="flex-1 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-100">
-                        Discount
+                        {{ $t('Discount') }}
                     </button>
                     <button @click="placeOrder"
                         :disabled="!cart.items.length || placingOrder"
                         class="flex-1 py-2 text-sm bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors">
-                        {{ placingOrder ? 'Placing...' : 'Place Order' }}
+                        {{ placingOrder ? $t('Placing...') : $t('Place Order') }}
                     </button>
                 </div>
                 <button @click="showPaymentModal = true"
                     v-if="currentOrder && isAdmin"
                     class="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors">
-                    <CreditCard class="w-5 h-5 inline mr-2" />Pay AFS {{ currentOrder.grand_total }}
+                    <CreditCard class="w-5 h-5 inline mr-2" />{{ $t('Pay AFS {amount}', { amount: currentOrder.grand_total }) }}
                 </button>
             </div>
         </div>
@@ -188,26 +190,26 @@
     <Teleport to="body">
         <div v-if="showDiscountModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl w-full max-w-sm p-6">
-                <h3 class="font-bold text-lg mb-4">Apply Discount</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $t('Apply Discount') }}</h3>
                 <div class="space-y-4">
                     <div class="flex gap-2">
                         <button @click="discountForm.type = 'percentage'"
                             :class="['flex-1 py-2 rounded-lg text-sm font-medium', discountForm.type === 'percentage' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600']">
-                            Percentage %
+                            {{ $t('Percentage %') }}
                         </button>
                         <button @click="discountForm.type = 'fixed'"
                             :class="['flex-1 py-2 rounded-lg text-sm font-medium', discountForm.type === 'fixed' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600']">
-                            Fixed AFS
+                            {{ $t('Fixed AFS') }}
                         </button>
                     </div>
-                    <input v-model="discountForm.value" type="number" min="0" placeholder="Enter amount"
+                    <input v-model="discountForm.value" type="number" min="0" :placeholder="$t('Enter amount')"
                         class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
-                    <input v-model="discountForm.reason" placeholder="Reason (optional)"
+                    <input v-model="discountForm.reason" :placeholder="$t('Reason (optional)')"
                         class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="showDiscountModal = false; cart.clearDiscount()" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">Remove</button>
-                    <button @click="applyDiscount" class="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold">Apply</button>
+                    <button @click="showDiscountModal = false; cart.clearDiscount()" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">{{ $t('Remove') }}</button>
+                    <button @click="applyDiscount" class="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold">{{ $t('Apply') }}</button>
                 </div>
             </div>
         </div>
@@ -218,35 +220,35 @@
         <div v-if="showPaymentModal && currentOrder && isAdmin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl w-full max-w-md p-6">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="font-bold text-xl">Payment</h3>
+                    <h3 class="font-bold text-xl">{{ $t('Payment') }}</h3>
                     <button @click="showPaymentModal = false"><X class="w-6 h-6 text-gray-400" /></button>
                 </div>
                 <div class="text-center mb-6">
-                    <p class="text-sm text-gray-500">Amount to Pay</p>
+                    <p class="text-sm text-gray-500">{{ $t('Amount to Pay') }}</p>
                     <p class="text-4xl font-bold text-orange-600">AFS {{ currentOrder.grand_total }}</p>
                 </div>
                 <div class="grid grid-cols-3 gap-2 mb-4">
                     <button v-for="method in paymentMethods" :key="method.value"
                         @click="selectedPaymentMethod = method.value"
                         :class="['py-3 rounded-xl text-sm font-medium border-2 transition-colors', selectedPaymentMethod === method.value ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50']">
-                        {{ method.label }}
+                        {{ $t(method.label) }}
                     </button>
                 </div>
                 <div v-if="selectedPaymentMethod === 'cash'" class="mb-4">
-                    <label class="text-sm text-gray-600 mb-1 block">Cash Tendered</label>
+                    <label class="text-sm text-gray-600 mb-1 block">{{ $t('Cash Tendered') }}</label>
                     <input v-model="cashTendered" type="number" :placeholder="currentOrder.grand_total"
                         class="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg font-bold focus:ring-2 focus:ring-orange-500 outline-none" />
                     <div v-if="cashTendered >= currentOrder.grand_total" class="mt-2 text-green-600 font-bold">
-                        Change: AFS {{ (cashTendered - currentOrder.grand_total).toFixed(0) }}
+                        {{ $t('Change: AFS {amount}', { amount: (cashTendered - currentOrder.grand_total).toFixed(0) }) }}
                     </div>
                 </div>
                 <div v-else-if="selectedPaymentMethod === 'upi'" class="mb-4">
-                    <input v-model="upiTransactionId" placeholder="UPI Transaction ID"
+                    <input v-model="upiTransactionId" :placeholder="$t('UPI Transaction ID')"
                         class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
                 </div>
                 <button @click="processPayment" :disabled="processingPayment"
                     class="w-full py-4 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 disabled:opacity-60 transition-colors">
-                    {{ processingPayment ? 'Processing...' : `Collect AFS ${currentOrder.grand_total}` }}
+                    {{ processingPayment ? $t('Processing...') : $t('Collect AFS {amount}', { amount: currentOrder.grand_total }) }}
                 </button>
             </div>
         </div>
@@ -259,6 +261,7 @@ import { toast } from 'vue3-toastify'
 import { useCartStore } from '@/stores/cart.js'
 import { useAuthStore } from '@/stores/auth.js'
 import api from '@/api/index.js'
+import { t } from '@/localization.js'
 import {
     ShoppingCart, UtensilsCrossed, Search, Trash2, Plus, Minus,
     X, CreditCard
@@ -306,7 +309,10 @@ const filteredProducts = computed(() => {
     if (selectedCategoryId.value) list = list.filter(p => p.category_id === selectedCategoryId.value)
     if (searchQuery.value) {
         const q = searchQuery.value.toLowerCase()
-        list = list.filter(p => p.name.toLowerCase().includes(q))
+        list = list.filter(p =>
+            (p.name_en ?? p.name).toLowerCase().includes(q)
+            || (p.name_fa ?? '').toLowerCase().includes(q)
+        )
     }
     return list
 })
@@ -330,7 +336,8 @@ async function loadData() {
 function addToCart(product) {
     if (!product.is_available) return
     cart.addItem(product)
-    toast.success(`${product.name} added`, { autoClose: 1000 })
+    const productName = [product.name_en ?? product.name, product.name_fa].filter(Boolean).join(' / ')
+    toast.success(t('{name} added', { name: productName }), { autoClose: 1000 })
 }
 
 let customerTimer = null
@@ -362,9 +369,9 @@ async function placeOrder() {
     try {
         const { data } = await api.post('/orders', cart.toOrderPayload())
         currentOrder.value = data.order
-        toast.success(`Order ${data.order.order_number} placed!`)
+        toast.success(t('Order {number} placed!', { number: data.order.order_number }))
     } catch (err) {
-        toast.error(err.response?.data?.message || 'Failed to place order')
+        toast.error(err.response?.data?.message || t('Failed to place order'))
     } finally {
         placingOrder.value = false
     }
@@ -372,7 +379,7 @@ async function placeOrder() {
 
 async function processPayment() {
     if (!isAdmin.value) {
-        toast.error('Only admins can process payments.')
+        toast.error(t('Only admins can process payments.'))
         return
     }
     if (!currentOrder.value) return
@@ -387,13 +394,13 @@ async function processPayment() {
             }],
         }
         const { data } = await api.post(`/orders/${currentOrder.value.id}/payment`, paymentData)
-        toast.success('Payment successful!')
+        toast.success(t('Payment successful!'))
         showPaymentModal.value = false
         currentOrder.value = null
         cart.clearCart()
         await loadData()
     } catch (err) {
-        toast.error(err.response?.data?.message || 'Payment failed')
+        toast.error(err.response?.data?.message || t('Payment failed'))
     } finally {
         processingPayment.value = false
     }

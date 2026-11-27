@@ -39,6 +39,7 @@ A full-featured Restaurant Point of Sale (POS) system built with **Laravel 13** 
 - **Inventory Management** — Stock tracking and purchase orders
 - **Reports & Analytics** — Sales reports and business insights
 - **Roles & Permissions** — Granular access control per staff role
+- **Localization** — English and Dari interface with RTL layout; food and category names always remain bilingual
 - **Multi-restaurant Support** — Organization-level multi-branch management
 - **Authentication** — Secure API auth via Laravel Sanctum
 
@@ -126,6 +127,8 @@ composer run dev
 This starts Laravel server, queue worker, log watcher, and Vite dev server concurrently.
 
 The app will be available at `http://localhost:8000`.
+
+Use the language selector in the login screen or application header to switch between English and Dari. The preference is stored in the current browser, and Dari enables right-to-left layout. Food and category names are displayed in both English and Persian regardless of the selected interface language.
 
 ## Project Structure
 

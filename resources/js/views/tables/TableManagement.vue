@@ -1,13 +1,13 @@
 <template>
     <div class="p-4">
         <div class="flex items-center justify-between mb-4">
-            <h1 class="text-sm font-bold text-gray-800">Table Management</h1>
+            <h1 class="text-sm font-bold text-gray-800">{{ $t('Table Management') }}</h1>
             <div class="flex gap-1.5">
                 <button @click="openSectionForm()" class="bg-white border border-gray-300 text-gray-700 px-3 py-1.5 rounded text-xs font-medium hover:bg-gray-50 flex items-center gap-1.5">
-                    <Plus class="w-3.5 h-3.5" /> Add Section
+                    <Plus class="w-3.5 h-3.5" /> {{ $t('Add Section') }}
                 </button>
                 <button @click="openTableForm()" class="bg-red-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-red-700 flex items-center gap-1.5">
-                    <Plus class="w-3.5 h-3.5" /> Add Table
+                    <Plus class="w-3.5 h-3.5" /> {{ $t('Add Table') }}
                 </button>
             </div>
         </div>
@@ -16,7 +16,7 @@
         <div class="grid grid-cols-4 gap-2 mb-4">
             <div v-for="s in tableSummary" :key="s.status" class="bg-white rounded-lg p-3 shadow-sm text-center">
                 <p class="text-xl font-bold" :class="s.color">{{ s.count }}</p>
-                <p class="text-xs text-gray-500 capitalize">{{ s.status }}</p>
+                <p class="text-xs text-gray-500 capitalize">{{ $t(s.status) }}</p>
             </div>
         </div>
 
@@ -25,7 +25,7 @@
             <h2 class="text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <Layers class="w-3.5 h-3.5 text-red-500" />
                 {{ section.name }}
-                <span class="text-xs font-normal text-gray-400">({{ section.tables.length }} tables)</span>
+                <span class="text-xs font-normal text-gray-400">({{ $t('{count} tables', { count: section.tables.length }) }})</span>
             </h2>
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                 <div v-for="table in section.tables" :key="table.id"
@@ -33,7 +33,7 @@
                     @click="openTableActions(table)">
                     <div class="text-center">
                         <p class="font-bold text-sm text-gray-900">{{ table.name }}</p>
-                        <p class="text-xs text-gray-500">{{ table.capacity }} seats</p>
+                        <p class="text-xs text-gray-500">{{ $t('{count} seats', { count: table.capacity }) }}</p>
                         <StatusBadge :status="table.status" class="mt-1.5" />
                     </div>
                     <button @click.stop="openTableForm(table)"
@@ -47,7 +47,7 @@
         <!-- Uncategorized tables -->
         <div v-if="uncategorizedTables.length" class="mb-4">
             <h2 class="text-xs font-bold text-gray-700 mb-2 flex items-center gap-2">
-                <Layers class="w-3.5 h-3.5 text-gray-400" /> General Area
+                <Layers class="w-3.5 h-3.5 text-gray-400" /> {{ $t('General Area') }}
             </h2>
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                 <div v-for="table in uncategorizedTables" :key="table.id"
@@ -55,7 +55,7 @@
                     @click="openTableActions(table)">
                     <div class="text-center">
                         <p class="font-bold text-sm text-gray-900">{{ table.name }}</p>
-                        <p class="text-xs text-gray-500">{{ table.capacity }} seats</p>
+                        <p class="text-xs text-gray-500">{{ $t('{count} seats', { count: table.capacity }) }}</p>
                         <StatusBadge :status="table.status" class="mt-1.5" />
                     </div>
                 </div>
@@ -67,27 +67,27 @@
     <Teleport to="body">
         <div v-if="showTableModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-xl w-full max-w-sm p-5">
-                <h3 class="font-bold text-sm mb-3">{{ editingTable?.id ? 'Edit Table' : 'Add Table' }}</h3>
+                <h3 class="font-bold text-sm mb-3">{{ $t(editingTable?.id ? 'Edit Table' : 'Add Table') }}</h3>
                 <div class="space-y-2.5">
-                    <div><label class="text-xs font-medium mb-1 block">Table Name *</label>
+                    <div><label class="text-xs font-medium mb-1 block">{{ $t('Table Name *') }}</label>
                         <input v-model="tableForm.name" class="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-red-400" /></div>
-                    <div><label class="text-xs font-medium mb-1 block">Table Number</label>
+                    <div><label class="text-xs font-medium mb-1 block">{{ $t('Table Number') }}</label>
                         <input v-model="tableForm.table_number" class="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-red-400" /></div>
-                    <div><label class="text-xs font-medium mb-1 block">Section</label>
+                    <div><label class="text-xs font-medium mb-1 block">{{ $t('Section') }}</label>
                         <select v-model="tableForm.section_id" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                            <option :value="null">No Section</option>
+                            <option :value="null">{{ $t('No Section') }}</option>
                             <option v-for="s in sections" :key="s.id" :value="s.id">{{ s.name }}</option>
                         </select></div>
-                    <div><label class="text-xs font-medium mb-1 block">Capacity *</label>
+                    <div><label class="text-xs font-medium mb-1 block">{{ $t('Capacity *') }}</label>
                         <input v-model="tableForm.capacity" type="number" min="1" class="w-full border border-gray-300 rounded px-3 py-2 text-sm outline-none focus:border-red-400" /></div>
-                    <div><label class="text-xs font-medium mb-1 block">Type</label>
+                    <div><label class="text-xs font-medium mb-1 block">{{ $t('Type') }}</label>
                         <select v-model="tableForm.table_type" class="w-full border border-gray-300 rounded px-3 py-2 text-sm">
                             <option v-for="t in tableTypes" :key="t" :value="t" class="capitalize">{{ t }}</option>
                         </select></div>
                 </div>
                 <div class="flex gap-2 mt-4">
-                    <button @click="showTableModal = false" class="flex-1 py-2 border rounded text-xs text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button @click="saveTable" class="flex-1 py-2 bg-red-600 text-white rounded text-xs font-semibold">Save</button>
+                    <button @click="showTableModal = false" class="flex-1 py-2 border rounded text-xs text-gray-600 hover:bg-gray-50">{{ $t('Cancel') }}</button>
+                    <button @click="saveTable" class="flex-1 py-2 bg-red-600 text-white rounded text-xs font-semibold">{{ $t('Save') }}</button>
                 </div>
             </div>
         </div>
@@ -100,6 +100,7 @@ import { toast } from 'vue3-toastify'
 import { Plus, Layers, Pencil } from 'lucide-vue-next'
 import api from '@/api/index.js'
 import StatusBadge from '@/components/StatusBadge.vue'
+import { t } from '@/localization.js'
 
 const tables = ref([])
 const sections = ref([])
@@ -150,27 +151,27 @@ function openTableForm(table = null) {
 async function saveTable() {
     if (editingTable.value?.id) {
         await api.put(`/tables/${editingTable.value.id}`, tableForm)
-        toast.success('Table updated')
+        toast.success(t('Table updated'))
     } else {
         await api.post('/tables', { ...tableForm, table_number: tableForm.table_number || tableForm.name })
-        toast.success('Table created')
+        toast.success(t('Table created'))
     }
     showTableModal.value = false
     await loadData()
 }
 
 function openSectionForm() {
-    const name = prompt('Section name:')
+    const name = prompt(t('Section name:'))
     if (!name) return
-    api.post('/table-sections', { name }).then(() => { toast.success('Section created'); loadData() })
+    api.post('/table-sections', { name }).then(() => { toast.success(t('Section created')); loadData() })
 }
 
 function openTableActions(table) {
     if (table.status === 'available') {
-        const action = confirm(`Mark "${table.name}" as occupied?`)
+        const action = confirm(t('Mark "{name}" as occupied?', { name: table.name }))
         if (action) api.patch(`/tables/${table.id}/status`, { status: 'occupied' }).then(() => loadData())
     } else if (table.status === 'occupied') {
-        const action = confirm(`Mark "${table.name}" as available?`)
+        const action = confirm(t('Mark "{name}" as available?', { name: table.name }))
         if (action) api.patch(`/tables/${table.id}/status`, { status: 'available' }).then(() => loadData())
     }
 }

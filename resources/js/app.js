@@ -4,6 +4,7 @@ import Vue3Toastify, { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import router from './router/index.js'
 import App from './App.vue'
+import { t } from './localization.js'
 import '../css/app.css'
 
 const app = createApp(App)
@@ -17,5 +18,6 @@ app.use(Vue3Toastify, {
 })
 
 app.config.globalProperties.$toast = toast
+app.config.globalProperties.$t = t
 
 app.mount('#app')

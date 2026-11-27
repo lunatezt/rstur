@@ -3,10 +3,10 @@
         <!-- Tabs -->
         <div class="flex gap-4 mb-6">
             <button @click="tab = 'categories'" :class="['px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors', tab === 'categories' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
-                Categories ({{ categories.length }})
+                {{ $t('Categories ({count})', { count: categories.length }) }}
             </button>
             <button @click="tab = 'products'" :class="['px-5 py-2.5 rounded-lg font-semibold text-sm transition-colors', tab === 'products' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100']">
-                Products ({{ products.total ?? 0 }})
+                {{ $t('Products ({count})', { count: products.total ?? 0 }) }}
             </button>
         </div>
 
@@ -14,17 +14,17 @@
         <div v-if="tab === 'categories'">
             <div class="flex justify-end mb-4">
                 <button @click="openCategoryForm()" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2">
-                    <Plus class="w-4 h-4" /> Add Category
+                    <Plus class="w-4 h-4" /> {{ $t('Add Category') }}
                 </button>
             </div>
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <table class="w-full">
                     <thead class="bg-gray-50 border-b">
                         <tr>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Name</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Products</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Display</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Name') }}</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Products') }}</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Display') }}</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Status') }}</th>
                             <th class="px-6 py-3"></th>
                         </tr>
                     </thead>
@@ -44,18 +44,18 @@
                             <td class="px-6 py-4 text-gray-600">{{ cat.products_count }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex gap-1">
-                                    <span v-if="cat.display_in_pos" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">POS</span>
-                                    <span v-if="cat.display_in_kds" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">KDS</span>
+                                    <span v-if="cat.display_in_pos" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{{ $t('POS') }}</span>
+                                    <span v-if="cat.display_in_kds" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">{{ $t('KDS') }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <span :class="cat.is_active ? 'text-green-600' : 'text-red-500'" class="text-sm font-medium">
-                                    {{ cat.is_active ? 'Active' : 'Inactive' }}
+                                    {{ $t(cat.is_active ? 'Active' : 'Inactive') }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button @click="openCategoryForm(cat)" class="text-orange-500 hover:underline text-sm mr-3">Edit</button>
-                                <button @click="deleteCategory(cat)" class="text-red-500 hover:underline text-sm">Delete</button>
+                                <button @click="openCategoryForm(cat)" class="text-orange-500 hover:underline text-sm mr-3">{{ $t('Edit') }}</button>
+                                <button @click="deleteCategory(cat)" class="text-red-500 hover:underline text-sm">{{ $t('Delete') }}</button>
                             </td>
                         </tr>
                     </tbody>
@@ -67,23 +67,23 @@
         <div v-else>
             <div class="flex items-center gap-3 mb-4">
                 <select v-model="productFilters.category_id" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                    <option value="">All Categories</option>
+                    <option value="">{{ $t('All Categories') }}</option>
                     <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name_en ?? c.name }}{{ c.name_fa ? ` / ${c.name_fa}` : '' }}</option>
                 </select>
-                <input v-model="productFilters.search" placeholder="Search products..." class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1" />
+                <input v-model="productFilters.search" :placeholder="$t('Search products...')" class="border border-gray-300 rounded-lg px-3 py-2 text-sm flex-1" />
                 <button @click="openProductForm()" class="bg-orange-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-600 flex items-center gap-2 flex-shrink-0">
-                    <Plus class="w-4 h-4" /> Add Product
+                    <Plus class="w-4 h-4" /> {{ $t('Add Product') }}
                 </button>
             </div>
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <table class="w-full">
                     <thead class="bg-gray-50 border-b">
                         <tr>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Category</th>
-                            <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Type</th>
-                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Availability</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Product') }}</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Category') }}</th>
+                            <th class="text-right px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Price') }}</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Type') }}</th>
+                            <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">{{ $t('Availability') }}</th>
                             <th class="px-6 py-3"></th>
                         </tr>
                     </thead>
@@ -112,12 +112,12 @@
                             <td class="px-6 py-4">
                                 <button @click="toggleAvailability(product)"
                                     :class="['px-3 py-1 rounded-full text-xs font-medium transition-colors', product.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                                    {{ product.is_available ? 'Available' : 'Unavailable' }}
+                                    {{ $t(product.is_available ? 'Available' : 'Unavailable') }}
                                 </button>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button @click="openProductForm(product)" class="text-orange-500 hover:underline text-sm mr-3">Edit</button>
-                                <button @click="deleteProduct(product)" class="text-red-500 hover:underline text-sm">Delete</button>
+                                <button @click="openProductForm(product)" class="text-orange-500 hover:underline text-sm mr-3">{{ $t('Edit') }}</button>
+                                <button @click="deleteProduct(product)" class="text-red-500 hover:underline text-sm">{{ $t('Delete') }}</button>
                             </td>
                         </tr>
                     </tbody>
@@ -130,34 +130,34 @@
     <Teleport to="body">
         <div v-if="showCategoryModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-2xl w-full max-w-md p-6">
-                <h3 class="font-bold text-lg mb-4">{{ editingCategory?.id ? 'Edit' : 'Add' }} Category</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $t(editingCategory?.id ? 'Edit' : 'Add') }} {{ $t('Category') }}</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">English Name *</label>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('English Name *') }}</label>
                         <input v-model.trim="categoryForm.name_en" required maxlength="255" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">Persian Name *</label>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Persian Name *') }}</label>
                         <input v-model.trim="categoryForm.name_fa" required maxlength="255" dir="rtl" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 outline-none" />
                     </div>
                     <div class="flex gap-4">
                         <label class="flex items-center gap-2 text-sm">
                             <input v-model="categoryForm.is_active" type="checkbox" class="w-4 h-4 accent-orange-500" />
-                            Active
+                            {{ $t('Active') }}
                         </label>
                         <label class="flex items-center gap-2 text-sm">
                             <input v-model="categoryForm.display_in_pos" type="checkbox" class="w-4 h-4 accent-orange-500" />
-                            Show in POS
+                            {{ $t('Show in POS') }}
                         </label>
                         <label class="flex items-center gap-2 text-sm">
                             <input v-model="categoryForm.display_in_kds" type="checkbox" class="w-4 h-4 accent-orange-500" />
-                            Show in KDS
+                            {{ $t('Show in KDS') }}
                         </label>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="showCategoryModal = false" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button @click="saveCategory" class="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">Save</button>
+                    <button @click="showCategoryModal = false" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">{{ $t('Cancel') }}</button>
+                    <button @click="saveCategory" class="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">{{ $t('Save') }}</button>
                 </div>
             </div>
         </div>
@@ -167,67 +167,67 @@
     <Teleport to="body">
         <div v-if="showProductModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
             <div class="bg-white rounded-2xl w-full max-w-lg p-6 my-4">
-                <h3 class="font-bold text-lg mb-4">{{ editingProduct?.id ? 'Edit' : 'Add' }} Product</h3>
+                <h3 class="font-bold text-lg mb-4">{{ $t(editingProduct?.id ? 'Edit' : 'Add') }} {{ $t('Product') }}</h3>
                 <div class="space-y-4">
                     <div class="grid grid-cols-2 gap-3">
                         <div class="col-span-2">
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">English Name *</label>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('English Name *') }}</label>
                             <input v-model.trim="productForm.name_en" required maxlength="255" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                         <div class="col-span-2">
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">Persian Name *</label>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Persian Name *') }}</label>
                             <input v-model.trim="productForm.name_fa" required maxlength="255" dir="rtl" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">Category *</label>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Category *') }}</label>
                             <select v-model="productForm.category_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2.5">
                                 <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name_en ?? c.name }}{{ c.name_fa ? ` / ${c.name_fa}` : '' }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">Price *</label>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Price *') }}</label>
                             <input v-model="productForm.price" type="number" min="0" step="0.01" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">Cost Price</label>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Cost Price') }}</label>
                             <input v-model="productForm.cost_price" type="number" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">SKU</label>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('SKU') }}</label>
                             <input v-model="productForm.sku" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-700 mb-1 block">Prep Time (min)</label>
+                            <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Prep Time (min)') }}</label>
                             <input v-model="productForm.preparation_time_minutes" type="number" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none" />
                         </div>
                     </div>
                     <div class="flex gap-4 flex-wrap">
-                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_veg" type="checkbox" class="w-4 h-4 accent-green-500" />Veg</label>
-                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_available" type="checkbox" class="w-4 h-4 accent-orange-500" />Available</label>
-                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_featured" type="checkbox" class="w-4 h-4 accent-orange-500" />Featured</label>
-                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_active" type="checkbox" class="w-4 h-4 accent-orange-500" />Active</label>
+                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_veg" type="checkbox" class="w-4 h-4 accent-green-500" />{{ $t('Veg') }}</label>
+                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_available" type="checkbox" class="w-4 h-4 accent-orange-500" />{{ $t('Available') }}</label>
+                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_featured" type="checkbox" class="w-4 h-4 accent-orange-500" />{{ $t('Featured') }}</label>
+                        <label class="flex items-center gap-2 text-sm"><input v-model="productForm.is_active" type="checkbox" class="w-4 h-4 accent-orange-500" />{{ $t('Active') }}</label>
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">Description</label>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Description') }}</label>
                         <textarea v-model="productForm.short_description" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-orange-500 outline-none"></textarea>
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-gray-700 mb-1 block">Food Photo</label>
+                        <label class="text-sm font-medium text-gray-700 mb-1 block">{{ $t('Food Photo') }}</label>
                         <div class="flex items-center gap-3">
                             <img :src="productImagePreview" alt="Product preview" class="w-20 h-20 rounded-lg object-cover bg-gray-100" />
                             <div>
                                 <input type="file" accept="image/*" @change="handleProductImageChange"
                                     class="block w-full text-xs text-gray-600 file:mr-2 file:px-3 file:py-1.5 file:rounded file:border-0 file:bg-orange-100 file:text-orange-700" />
                                 <button v-if="editingProduct?.image" type="button" @click="clearProductImage"
-                                    class="mt-2 text-xs text-red-600 hover:underline">Remove photo</button>
-                                <p class="mt-1 text-xs text-gray-400">JPG, PNG, or WebP; up to 5 MB.</p>
+                                    class="mt-2 text-xs text-red-600 hover:underline">{{ $t('Remove photo') }}</button>
+                                <p class="mt-1 text-xs text-gray-400">{{ $t('JPG, PNG, or WebP; up to 5 MB.') }}</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
-                    <button @click="closeProductForm" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button @click="saveProduct" class="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">Save</button>
+                    <button @click="closeProductForm" class="flex-1 py-3 border rounded-lg text-gray-600 hover:bg-gray-50">{{ $t('Cancel') }}</button>
+                    <button @click="saveProduct" class="flex-1 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600">{{ $t('Save') }}</button>
                 </div>
             </div>
         </div>
@@ -239,6 +239,7 @@ import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { toast } from 'vue3-toastify'
 import { Plus } from 'lucide-vue-next'
 import api from '@/api/index.js'
+import { t } from '@/localization.js'
 
 const tab = ref('categories')
 const categories = ref([])
@@ -287,22 +288,23 @@ async function saveCategory() {
     try {
         if (editingCategory.value?.id) {
             await api.put(`/categories/${editingCategory.value.id}`, payload)
-            toast.success('Category updated')
+            toast.success(t('Category updated'))
         } else {
             await api.post('/categories', payload)
-            toast.success('Category created')
+            toast.success(t('Category created'))
         }
         showCategoryModal.value = false
         await loadCategories()
     } catch (error) {
-        toast.error(error.response?.data?.message ?? 'Failed to save category')
+        toast.error(error.response?.data?.message ?? t('Failed to save category'))
     }
 }
 
 async function deleteCategory(cat) {
-    if (!confirm(`Delete category "${cat.name}"?`)) return
+    const categoryName = [cat.name_en ?? cat.name, cat.name_fa].filter(Boolean).join(' / ')
+    if (!confirm(t('Delete category "{name}"?', { name: categoryName }))) return
     await api.delete(`/categories/${cat.id}`)
-    toast.success('Category deleted')
+    toast.success(t('Category deleted'))
     await loadCategories()
 }
 
@@ -370,22 +372,23 @@ async function saveProduct() {
     try {
         if (editingProduct.value?.id) {
             await api.post(`/products/${editingProduct.value.id}`, payload, { headers: { 'Content-Type': 'multipart/form-data' } })
-            toast.success('Product updated')
+            toast.success(t('Product updated'))
         } else {
             await api.post('/products', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
-            toast.success('Product created')
+            toast.success(t('Product created'))
         }
         closeProductForm()
         await loadProducts()
     } catch (error) {
-        toast.error(error.response?.data?.message ?? 'Failed to save product')
+        toast.error(error.response?.data?.message ?? t('Failed to save product'))
     }
 }
 
 async function deleteProduct(product) {
-    if (!confirm(`Delete product "${product.name}"?`)) return
+    const productName = [product.name_en ?? product.name, product.name_fa].filter(Boolean).join(' / ')
+    if (!confirm(t('Delete product "{name}"?', { name: productName }))) return
     await api.delete(`/products/${product.id}`)
-    toast.success('Product deleted')
+    toast.success(t('Product deleted'))
     await loadProducts()
 }
 
