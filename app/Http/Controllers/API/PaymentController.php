@@ -76,7 +76,7 @@ class PaymentController extends Controller
             $invoice = $this->generateInvoice($order);
 
             return response()->json([
-                'order' => $order->load(['payments', 'items']),
+                'order' => $order->load(['payments', 'items.product']),
                 'invoice' => $invoice,
                 'change' => max(0, $totalPaid - $order->grand_total),
             ]);
