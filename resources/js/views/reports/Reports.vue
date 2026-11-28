@@ -20,9 +20,6 @@
                     <option value="month">{{ $t('Monthly') }}</option>
                 </select>
             </div>
-            <button @click="loadReport" class="mt-4 bg-orange-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-orange-600">
-                {{ $t('Generate Report') }}
-            </button>
         </div>
 
         <div v-if="loading" class="flex items-center justify-center h-40">
@@ -105,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { TrendingUp, ShoppingBag, Target, Receipt } from 'lucide-vue-next'
 import api from '@/api/index.js'
 import StatCard from '@/components/StatCard.vue'
@@ -131,6 +128,8 @@ async function loadReport() {
         loading.value = false
     }
 }
+
+watch(filters, loadReport)
 
 loadReport()
 </script>

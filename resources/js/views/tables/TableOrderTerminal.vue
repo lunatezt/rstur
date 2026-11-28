@@ -343,6 +343,7 @@ import { toast } from 'vue3-toastify'
 import { ArrowLeft, Search, X, UtensilsCrossed, AlertCircle } from 'lucide-vue-next'
 import api from '@/api/index.js'
 import { useAuthStore } from '@/stores/auth.js'
+import { openReceiptWindow, printOrderReceipt } from '@/utils/receiptPrinter.js'
 import { t, useLocalization } from '@/localization.js'
 
 const route  = useRoute()
@@ -391,9 +392,6 @@ const orderTypes = [
 
 const paymentMethods = [
     { key: 'cash',   label: 'Cash' },
-    { key: 'card',   label: 'Card' },
-    { key: 'upi',    label: 'UPI' },
-    { key: 'credit', label: 'Due' },
 ]
 
 const orderTypeLabel = computed(() => {
@@ -555,18 +553,32 @@ async function saveAndPay() {
         return toast.warning(t('Please enter customer name first'))
     }
 
+    if (!currentOrder.value && !localCartCount.value) {
+        return toast.warning(t('No order to pay. Add items first.'))
+    }
+
+    const receiptWindow = openReceiptWindow()
+    if (!receiptWindow) {
+        toast.error(t('Allow pop-ups to print the receipt, then try again.'))
+        return
+    }
+
     if (localCartCount.value) {
         await sendKOT()
-        if (!currentOrder.value) return
+        if (!currentOrder.value) {
+            receiptWindow.close()
+            return
+        }
     }
 
     if (!currentOrder.value) {
+        receiptWindow.close()
         return toast.warning(t('No order to pay. Add items first.'))
     }
 
     paying.value = true
     try {
-        await api.post(`/orders/${currentOrder.value.id}/payment`, {
+        const { data } = await api.post(`/orders/${currentOrder.value.id}/payment`, {
             payments: [{
                 method:          payMethod.value,
                 amount:          parseFloat(currentOrder.value.grand_total),
@@ -575,9 +587,22 @@ async function saveAndPay() {
                     : undefined,
             }],
         })
+        try {
+            printOrderReceipt(receiptWindow, {
+                order: data.order,
+                invoice: data.invoice,
+                restaurant: auth.restaurant,
+                table: table.value,
+                currency: auth.restaurant?.currency_symbol ?? 'AFS',
+            })
+        } catch (printError) {
+            receiptWindow.close()
+            toast.error(printError.message)
+        }
         toast.success(t('Payment done!'))
         router.push({ name: 'tables' })
     } catch (err) {
+        receiptWindow.close()
         toast.error(err?.response?.data?.message ?? t('Payment failed'))
     } finally {
         paying.value = false

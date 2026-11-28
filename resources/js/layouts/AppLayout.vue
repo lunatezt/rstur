@@ -108,7 +108,6 @@ const navItems = [
     { name: 'table-setup',  label: 'Table Setup',   path: '/table-setup', icon: LayoutGrid,      permission: 'tables.manage' },
     { name: 'orders',       label: 'Orders',         path: '/orders',      icon: ClipboardList,   permission: 'orders.view' },
     { name: 'menu',         label: 'Menu',           path: '/menu',        icon: UtensilsCrossed, permission: 'menu.view' },
-    { name: 'customers',    label: 'Customers',      path: '/customers',   icon: Users,           permission: 'customers.view' },
     { name: 'staff',        label: 'Staff',         path: '/staff',       icon: Users,           permission: 'staff.manage' },
     { name: 'inventory',    label: 'Inventory',      path: '/inventory',   icon: Package,         permission: 'inventory.view' },
     { name: 'kds',          label: 'Kitchen',        path: '/kds',         icon: ChefHat,         permission: 'kitchen.view' },
