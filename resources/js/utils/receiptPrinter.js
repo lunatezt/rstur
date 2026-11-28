@@ -83,11 +83,7 @@ export function printOrderReceipt(receiptWindow, { order, invoice, restaurant, t
     <div class="rule"></div>
     <table><tbody>${items}</tbody></table>
     <div class="rule"></div>
-    ${summaryLine('Subtotal', order.sub_total)}
-    ${summaryLine('Tax', order.tax_amount)}
     ${Number(order.discount_amount) > 0 ? summaryLine('Discount', -Number(order.discount_amount)) : ''}
-    ${Number(order.service_charge_amount) > 0 ? summaryLine('Service charge', order.service_charge_amount) : ''}
-    <div class="rule"></div>
     <div class="row total"><span>Total</span><span>${escapeHtml(currency)} ${formatAmount(order.grand_total)}</span></div>
     <div class="row"><span>Paid</span><span>${escapeHtml(currency)} ${formatAmount(paidAmount)}</span></div>
     ${cashTendered != null ? summaryLine('Cash received', cashTendered) : ''}
