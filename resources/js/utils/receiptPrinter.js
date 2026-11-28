@@ -25,7 +25,11 @@ export function printOrderReceipt(receiptWindow, { order, invoice, restaurant, t
 
     const items = (order.items ?? []).map(item => `
         <tr>
-            <td class="item">${escapeHtml(item.product_name)}<br><small>${escapeHtml(item.quantity)} x ${escapeHtml(currency)} ${formatAmount(item.unit_price)}</small></td>
+            <td class="item">
+                <div>${escapeHtml(item.product_name)}</div>
+                ${item.product?.name_fa ? `<div class="persian" dir="rtl">${escapeHtml(item.product.name_fa)}</div>` : ''}
+                <small>${escapeHtml(item.quantity)} x ${escapeHtml(currency)} ${formatAmount(item.unit_price)}</small>
+            </td>
             <td class="amount">${escapeHtml(currency)} ${formatAmount(item.item_total)}</td>
         </tr>
     `).join('')
@@ -57,6 +61,7 @@ export function printOrderReceipt(receiptWindow, { order, invoice, restaurant, t
         table { width: 100%; border-collapse: collapse; margin: 6px 0; }
         td { vertical-align: top; padding: 4px 0; }
         .item { text-align: left; }
+        .persian { text-align: right; direction: rtl; font-family: Tahoma, Arial, sans-serif; font-size: 11px; }
         .amount { text-align: right; white-space: nowrap; }
         small { font-size: 10px; }
         .row { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
