@@ -392,9 +392,6 @@ const orderTypes = [
 
 const paymentMethods = [
     { key: 'cash',   label: 'Cash' },
-    { key: 'card',   label: 'Card' },
-    { key: 'upi',    label: 'UPI' },
-    { key: 'credit', label: 'Due' },
 ]
 
 const orderTypeLabel = computed(() => {
