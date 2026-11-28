@@ -6,8 +6,6 @@ use App\Models\Organization;
 use App\Models\Permission;
 use App\Models\Restaurant;
 use App\Models\Role;
-use App\Models\Table;
-use App\Models\TableSection;
 use App\Models\TaxCategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -120,22 +118,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call(MenuSeeder::class);
 
-        $indoor = TableSection::create(['restaurant_id' => $restaurant->id, 'name' => 'Indoor', 'sort_order' => 1, 'is_active' => true]);
-        $outdoor = TableSection::create(['restaurant_id' => $restaurant->id, 'name' => 'Outdoor', 'sort_order' => 2, 'is_active' => true]);
-        $private = TableSection::create(['restaurant_id' => $restaurant->id, 'name' => 'Private Dining', 'sort_order' => 3, 'is_active' => true]);
-
-        $tables = [
-            [$indoor->id, 'T1', '1', 2, 'couple'], [$indoor->id, 'T2', '2', 4, 'regular'],
-            [$indoor->id, 'T3', '3', 4, 'regular'], [$indoor->id, 'T4', '4', 6, 'family'],
-            [$indoor->id, 'T5', '5', 6, 'family'], [$indoor->id, 'T6', '6', 8, 'party'],
-            [$outdoor->id, 'O1', '7', 4, 'outdoor'], [$outdoor->id, 'O2', '8', 4, 'outdoor'],
-            [$outdoor->id, 'O3', '9', 6, 'outdoor'],
-            [$private->id, 'P1', '10', 10, 'private'], [$private->id, 'P2', '11', 12, 'private'],
-        ];
-
-        foreach ($tables as [$sectionId, $name, $num, $cap, $type]) {
-            Table::create(['restaurant_id' => $restaurant->id, 'section_id' => $sectionId, 'name' => $name, 'table_number' => $num, 'capacity' => $cap, 'table_type' => $type, 'status' => 'available', 'is_active' => true]);
-        }
+        $this->call(TableLayoutSeeder::class);
 
         $this->command->info('✅ Database seeded! Login: admin@restaurantpos.com / password123');
     }
