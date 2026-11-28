@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -97,6 +98,34 @@ class AuthController extends Controller
         $user->update($validated);
 
         return response()->json(['user' => $this->formatUser($user->load(['role.permissions', 'restaurant']))]);
+    }
+
+    public function updatePin(Request $request)
+    {
+        $user = $request->user();
+        abort_unless($user->role?->slug === 'admin', 403);
+
+        $validated = $request->validate([
+            'current_pin' => 'required|digits:4',
+            'pin_code' => [
+                'required',
+                'digits:4',
+                'confirmed',
+                Rule::unique('users', 'pin_code')
+                    ->where('restaurant_id', $user->restaurant_id)
+                    ->ignore($user->id),
+            ],
+        ]);
+
+        if ($validated['current_pin'] !== $user->pin_code) {
+            throw ValidationException::withMessages([
+                'current_pin' => ['The current PIN is incorrect.'],
+            ]);
+        }
+
+        $user->update(['pin_code' => $validated['pin_code']]);
+
+        return response()->json(['message' => 'PIN updated successfully.']);
     }
 
     private function formatUser(User $user): array

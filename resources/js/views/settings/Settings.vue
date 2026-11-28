@@ -12,6 +12,36 @@
                 </button>
             </div>
 
+            <form v-if="tab === 'pin'" @submit.prevent="changePin" class="bg-white rounded-lg shadow-sm p-4 max-w-md">
+                <h2 class="font-bold text-sm text-gray-800 mb-3">{{ $t('Change Admin PIN') }}</h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Current PIN') }}</label>
+                        <input v-model="pinForm.current_pin" type="password" inputmode="numeric" maxlength="4"
+                            pattern="[0-9]{4}" autocomplete="current-password" required
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('New PIN') }}</label>
+                        <input v-model="pinForm.pin_code" type="password" inputmode="numeric" maxlength="4"
+                            pattern="[0-9]{4}" autocomplete="new-password" required
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-700 mb-1 block">{{ $t('Confirm New PIN') }}</label>
+                        <input v-model="pinForm.pin_code_confirmation" type="password" inputmode="numeric" maxlength="4"
+                            pattern="[0-9]{4}" autocomplete="new-password" required
+                            class="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="submit" :disabled="savingPin"
+                        class="bg-red-600 text-white px-4 py-2 rounded text-xs font-semibold hover:bg-red-700 disabled:opacity-60">
+                        {{ savingPin ? $t('Saving...') : $t('Change PIN') }}
+                    </button>
+                </div>
+            </form>
+
             <!-- Restaurant Settings -->
             <div v-if="tab === 'restaurant'" class="bg-white rounded-lg shadow-sm p-4">
                 <h2 class="font-bold text-sm text-gray-800 mb-3">{{ $t('Restaurant Information') }}</h2>
@@ -209,18 +239,23 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { toast } from 'vue3-toastify'
 import { Plus } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth.js'
 import api from '@/api/index.js'
 import { t } from '@/localization.js'
 
+const auth = useAuthStore()
 const tab = ref('restaurant')
-const tabs = [
+const tabs = computed(() => [
     { key: 'restaurant', label: 'Restaurant' },
     { key: 'branding',   label: 'Branding' },
     { key: 'taxes',      label: 'Tax Categories' },
-]
+    ...(auth.user?.role?.slug === 'admin' ? [{ key: 'pin', label: 'Change PIN' }] : []),
+])
+const pinForm = reactive({ current_pin: '', pin_code: '', pin_code_confirmation: '' })
+const savingPin = ref(false)
 
 const restaurantForm = reactive({
     name: '', email: '', phone: '', gst_number: '', fssai_license: '',
@@ -249,6 +284,20 @@ const presetColors = [
 const taxCategories = ref([])
 const showTaxForm   = ref(false)
 const taxForm       = reactive({ name: '', tax_percentage: '', cgst_percentage: '', sgst_percentage: '' })
+
+async function changePin() {
+    savingPin.value = true
+    try {
+        await api.put('/auth/pin', pinForm)
+        Object.assign(pinForm, { current_pin: '', pin_code: '', pin_code_confirmation: '' })
+        toast.success(t('Admin PIN updated successfully.'))
+    } catch (error) {
+        const validationMessage = Object.values(error.response?.data?.errors ?? {}).flat()[0]
+        toast.error(validationMessage ?? error.response?.data?.message ?? t('Failed to change PIN.'))
+    } finally {
+        savingPin.value = false
+    }
+}
 
 async function loadSettings() {
     try {
