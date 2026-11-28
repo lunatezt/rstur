@@ -15,6 +15,7 @@ const translations = {
         'Kitchen': 'آشپزخانه',
         'Reports': 'گزارش‌ها',
         'Settings': 'تنظیمات',
+        'Allow pop-ups to print the receipt, then try again.': 'برای چاپ رسید، اجازهٔ بازشدن پنجره‌های جدید را بدهید و دوباره تلاش کنید.',
         'Change PIN': 'تغییر PIN',
         'Change Admin PIN': 'تغییر PIN مدیر',
         'Current PIN': 'PIN فعلی',
